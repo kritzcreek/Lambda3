@@ -6,7 +6,6 @@ use rowan::SmolStr;
 // - Parent-Pointer
 // - Syntax-Highlighting
 
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[allow(non_camel_case_types)]
 #[repr(u16)]
@@ -18,13 +17,14 @@ enum SyntaxKind {
     WORD,        // 'x'
     WHITESPACE,  // whitespaces is explicit
     ERROR,       // as well as errors
+    EOF,         // end of file
 
     // composite nodes
     PARENTHESIZED, // `(+ 2 3)`
-    VAR, // `+`, `15`, wraps a WORD token
-    LAMBDA, // a Lambda abstraction
-    APPLICATION, // a function application
-    ROOT, // The top-level node
+    VAR,           // `+`, `15`, wraps a WORD token
+    LAMBDA,        // a Lambda abstraction
+    APPLICATION,   // a function application
+    ROOT,          // The top-level node
 }
 
 use SyntaxKind::*;
@@ -45,6 +45,7 @@ impl From<SyntaxKind> for rowan::SyntaxKind {
 /// "kinds" are values from our `enum SyntaxKind`, instead of plain u16 values.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 enum Lang {}
+
 impl rowan::Language for Lang {
     type Kind = SyntaxKind;
     fn kind_from_raw(raw: rowan::SyntaxKind) -> Self::Kind {
@@ -64,7 +65,6 @@ use rowan::GreenNode;
 /// is helpful for top-down parsers: it maintains a stack
 /// of currently in-progress nodes
 use rowan::GreenNodeBuilder;
-use crate::ExprRes::Eof;
 
 /// The parse results are stored as a "green tree".
 /// We'll discuss working with the results later
@@ -89,9 +89,7 @@ struct Parser {
 enum ExprRes {
     /// An expression was successfully parsed
     Ok,
-    /// Nothing was parsed, as no significant tokens remained
-    Eof,
-    /// An unexpected ')' was found
+    /// An unexpected token was found
     Lul(String),
 }
 
@@ -103,14 +101,23 @@ impl Parser {
         let _ = self.expr();
         // Don't forget to eat *trailing* whitespace
         self.skip_ws();
-        if let Some(token) = self.current() {
-            self.errors.push(format!("Unexpected token {:?}", token))
+        if self.current() != SyntaxKind::EOF {
+            self.builder.start_node(ERROR.into());
+            while self.current() != EOF {
+                self.bump_any()
+            }
+            self.builder.finish_node();
+            self.errors
+                .push(format!("Unexpected token {:?}", self.current()))
         }
         // Close the root node.
         self.builder.finish_node();
 
         // Turn the builder into a GreenNode
-        Parse { green_node: self.builder.finish(), errors: self.errors }
+        Parse {
+            green_node: self.builder.finish(),
+            errors: self.errors,
+        }
     }
     fn expr(&mut self) -> ExprRes {
         let mut is_application = false;
@@ -119,12 +126,14 @@ impl Parser {
         match self.atom() {
             None => return ExprRes::Lul("Expected expression".to_string()),
             Some(ExprRes::Ok) => (),
-            Some(res) => return res,
+            Some(ExprRes::Lul(err)) => {
+                self.errors.push(err.clone());
+                return ExprRes::Lul((err.to_string()));
+            }
         }
         loop {
             match self.atom() {
                 None => break,
-                Some(ExprRes::Eof) => break,
                 Some(ExprRes::Lul(s)) => {
                     self.builder.start_node(ERROR.into());
                     self.errors.push(s);
@@ -133,7 +142,7 @@ impl Parser {
                 Some(ExprRes::Ok) => {
                     self.builder.start_node_at(checkpoint, APPLICATION.into());
                     is_application = true;
-                },
+                }
             }
         }
         if is_application {
@@ -148,68 +157,123 @@ impl Parser {
         // Either a list, an atom, a closing paren,
         // or an eof.
         match self.current() {
-            Some(L_PAREN) => {
+            L_PAREN => {
                 self.builder.start_node(PARENTHESIZED.into());
-                self.bump();
+                self.bump(L_PAREN);
                 self.expr();
-                match self.current() {
-                    None => {
-                        self.builder.finish_node();
-                        return Some(ExprRes::Lul("MISSING CLOSING PAREN".to_string()))
-                    }
-                    Some(R_PAREN) => {
-                        self.bump();
-                        self.builder.finish_node();
-                    }
-                    Some(_) => {
-                        self.builder.finish_node();
-                        return Some(ExprRes::Lul("UNEXPECTED".to_string()))
-                    }
+                if !self.eat(R_PAREN) {
+                    self.builder.finish_node();
+                    return Some(ExprRes::Lul(format!(
+                        "UNEXPECTED TOKEN {:?}",
+                        self.current()
+                    )));
                 }
-            },
-            Some(WORD) => {
-                self.builder.start_node(VAR.into());
-                self.bump();
                 self.builder.finish_node();
             }
-            Some(LAM) => {
-                self.builder.start_node(LAMBDA.into());
-                self.bump(); // \
-                self.skip_ws();
-                self.bump(); // var
-                self.skip_ws();
-                self.bump(); // ->
-                self.expr();
-                self.builder.finish_node()
+            WORD => {
+                self.builder.start_node(VAR.into());
+                self.bump(WORD);
+                self.builder.finish_node();
             }
-            Some(ERROR) => self.bump(),
+            LAM => {
+                self.builder.start_node(LAMBDA.into());
+                self.bump(LAM);
+                self.skip_ws();
+                if !self.eat(WORD) {
+                    self.builder.finish_node();
+                    return Some(ExprRes::Lul(format!(
+                        "expected binder, got {:?}",
+                        self.current()
+                    )));
+                }
+                self.skip_ws();
+
+                if !self.eat(ARROW) {
+                    self.builder.finish_node();
+                    return Some(ExprRes::Lul(format!(
+                        "expected '->', got {:?}",
+                        self.current()
+                    )));
+                }
+                match self.expr() {
+                    ExprRes::Ok => self.builder.finish_node(),
+                    err => {
+                        self.builder.finish_node();
+                        return Some(err);
+                    }
+                }
+            }
+            ERROR => self.bump_any(),
             _ => return None,
         }
         Some(ExprRes::Ok)
     }
 
+    fn nth(&self, n: usize) -> SyntaxKind {
+        if n >= self.tokens.len() {
+            return EOF;
+        }
+        self.tokens[self.tokens.len() - n - 1].0
+    }
 
+    /// Peek at the first unprocessed token
+    fn current(&self) -> SyntaxKind {
+        self.nth(0)
+    }
+
+    fn nth_at(&self, n: usize, kind: SyntaxKind) -> bool {
+        self.nth(n) == kind
+    }
+
+    fn at(&self, kind: SyntaxKind) -> bool {
+        self.current() == kind
+    }
+
+    fn eat(&mut self, kind: SyntaxKind) -> bool {
+        if self.current() != kind {
+            return false;
+        }
+        self.bump_any();
+        true
+    }
 
     /// Advance one token, adding it to the current branch of the tree builder.
-    fn bump(&mut self) {
+    fn bump_any(&mut self) {
+        if self.current() == EOF {
+            return;
+        }
         let (kind, text) = self.tokens.pop().unwrap();
         self.builder.token(kind.into(), text);
     }
-    /// Peek at the first unprocessed token
-    fn current(&self) -> Option<SyntaxKind> {
-        self.tokens.last().map(|(kind, _)| *kind)
+
+    fn bump(&mut self, kind: SyntaxKind) {
+        assert!(self.eat(kind))
     }
+
     fn skip_ws(&mut self) {
-        while self.current() == Some(WHITESPACE) {
-            self.bump()
+        while self.current() == WHITESPACE {
+            self.bump_any()
         }
     }
+
+    // fn expect(&mut self, kind: SyntaxKind) -> bool {
+    //     if self.eat(kind) {
+    //         return true;
+    //     }
+    //     self.error(format!("expected {:?}", kind));
+    //     false
+    // }
 }
 
 fn parse(text: &str) -> Parse {
     let mut tokens = lex(text);
     tokens.reverse();
-    Parser { tokens, builder: GreenNodeBuilder::new(), errors: Vec::new() }.parse()
+    Parser {
+        tokens,
+        builder: GreenNodeBuilder::new(),
+        errors: Vec::new(),
+    }
+    .parse()
 }
 
 type SyntaxNode = rowan::SyntaxNode<Lang>;
@@ -223,7 +287,6 @@ impl Parse {
         SyntaxNode::new_root(self.green_node.clone())
     }
 }
-
 
 /// Split the input string into a flat list of tokens
 /// (such as L_PAREN, WORD, and WHITESPACE)
@@ -271,6 +334,7 @@ fn lex(text: &str) -> Vec<(SyntaxKind, SmolStr)> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
     fn it_lexes() {
         let text = r"(\x -> x)";
@@ -280,7 +344,7 @@ mod tests {
 
     #[test]
     fn it_parses() {
-        let text = r"(\x -> x) (";
+        let text = r"(\ -> x) (";
         let parse = parse(text);
         let mut node = parse.syntax();
         println!("{}\n{:#?}\n{:#?}", text, parse.errors, node);
