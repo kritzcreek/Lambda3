@@ -10,31 +10,20 @@ use rowan::SmolStr;
 #[allow(non_camel_case_types)]
 #[repr(u16)]
 enum SyntaxKind {
-    L_PAREN = 0,
-    // '('
-    R_PAREN,
-    // ')'
-    LAM,
-    // '\'
-    ARROW,
-    // '->'
-    WORD,
-    // 'x'
-    WHITESPACE,
-    // whitespaces is explicit
-    ERROR,
-    // as well as errors
+    L_PAREN = 0, // '('
+    R_PAREN,     // ')'
+    LAM,         // '\'
+    ARROW,       // '->'
+    WORD,        // 'x'
+    WHITESPACE,  // whitespaces is explicit
+    ERROR,       // as well as errors
     EOF,         // end of file
 
     // composite nodes
-    PARENTHESIZED,
-    // `(+ 2 3)`
-    VAR,
-    // `+`, `15`, wraps a WORD token
-    LAMBDA,
-    // a Lambda abstraction
-    APPLICATION,
-    // a function application
+    PARENTHESIZED, // `(+ 2 3)`
+    VAR,           // `+`, `15`, wraps a WORD token
+    LAMBDA,        // a Lambda abstraction
+    APPLICATION,   // a function application
     ROOT,          // The top-level node
 }
 
@@ -173,6 +162,8 @@ impl Parser {
                 self.bump(L_PAREN);
                 self.expr();
                 if !self.eat(R_PAREN) {
+                    self.builder.start_node(ERROR.into());
+                    self.builder.finish_node();
                     self.builder.finish_node();
                     return Some(ExprRes::Lul(format!(
                         "UNEXPECTED TOKEN {:?}",
@@ -208,10 +199,12 @@ impl Parser {
                 }
                 match self.expr() {
                     ExprRes::Ok => self.builder.finish_node(),
-                    err => {
+                    ExprRes::Lul(err) => {
                         self.builder.start_node(ERROR.into());
                         self.builder.finish_node();
-                        return Some(err);
+                        self.builder.finish_node();
+                        self.errors.push(err);
+                        return None
                     }
                 }
             }
@@ -285,7 +278,7 @@ fn parse(text: &str) -> Parse {
         builder: GreenNodeBuilder::new(),
         errors: Vec::new(),
     }
-        .parse()
+    .parse()
 }
 
 type SyntaxNode = rowan::SyntaxNode<Lang>;
@@ -347,30 +340,39 @@ fn lex(text: &str) -> Vec<(SyntaxKind, SmolStr)> {
 mod tests {
     /*    use super::*;
 
-        #[test]
-        fn it_lexes() {
-            let text = r"(\x -> x)";
-            let tokens = lex(text);
-            println!("{:?}", tokens)
-        }
-
-        #[test]
-        fn it_parses() {
-            let text = r"(\ -> x) (";
-            let parse = parse(text);
-            let node = parse.syntax();
-            println!("{}\n{:#?}\n{:#?}", text, parse.errors, node);
-        }*/
-
-    use insta::assert_debug_snapshot;
-    use super::*;
+    #[test]
+    fn it_lexes() {
+        let text = r"(\x -> x)";
+        let tokens = lex(text);
+        println!("{:?}", tokens)
+    }
 
     #[test]
-    fn test_snapshots() {
+    fn it_parses() {
+        let text = r"(\ -> x) (";
+        let parse = parse(text);
+        let node = parse.syntax();
+        println!("{}\n{:#?}\n{:#?}", text, parse.errors, node);
+    }*/
+
+    use super::*;
+    use insta::assert_debug_snapshot;
+
+    #[test]
+    fn missing_body() {
         let text = r"(\x ->)";
         let parse = parse(text);
         let node = parse.syntax();
 
-        assert_debug_snapshot!("parse simple lambda", (text, parse.errors, node));
+        assert_debug_snapshot!("parse simple lambda with missing body", (text, parse.errors, node));
+    }
+
+    #[test]
+    fn missing_body_rparen() {
+        let text = r"(\x ->";
+        let parse = parse(text);
+        let node = parse.syntax();
+
+        assert_debug_snapshot!("parse simple lambda with missing body and rparen", (text, parse.errors, node));
     }
 }
