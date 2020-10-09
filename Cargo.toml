@@ -9,3 +9,4 @@ edition = "2018"
 [dependencies]
 rowan = "0.10"
 m_lexer = "*"
+insta = "1.0"
