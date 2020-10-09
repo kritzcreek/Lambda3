@@ -10,20 +10,31 @@ use rowan::SmolStr;
 #[allow(non_camel_case_types)]
 #[repr(u16)]
 enum SyntaxKind {
-    L_PAREN = 0, // '('
-    R_PAREN,     // ')'
-    LAM,         // '\'
-    ARROW,       // '->'
-    WORD,        // 'x'
-    WHITESPACE,  // whitespaces is explicit
-    ERROR,       // as well as errors
+    L_PAREN = 0,
+    // '('
+    R_PAREN,
+    // ')'
+    LAM,
+    // '\'
+    ARROW,
+    // '->'
+    WORD,
+    // 'x'
+    WHITESPACE,
+    // whitespaces is explicit
+    ERROR,
+    // as well as errors
     EOF,         // end of file
 
     // composite nodes
-    PARENTHESIZED, // `(+ 2 3)`
-    VAR,           // `+`, `15`, wraps a WORD token
-    LAMBDA,        // a Lambda abstraction
-    APPLICATION,   // a function application
+    PARENTHESIZED,
+    // `(+ 2 3)`
+    VAR,
+    // `+`, `15`, wraps a WORD token
+    LAMBDA,
+    // a Lambda abstraction
+    APPLICATION,
+    // a function application
     ROOT,          // The top-level node
 }
 
@@ -128,7 +139,7 @@ impl Parser {
             Some(ExprRes::Ok) => (),
             Some(ExprRes::Lul(err)) => {
                 self.errors.push(err.clone());
-                return ExprRes::Lul((err.to_string()));
+                return ExprRes::Lul(err.to_string());
             }
         }
         loop {
@@ -198,6 +209,7 @@ impl Parser {
                 match self.expr() {
                     ExprRes::Ok => self.builder.finish_node(),
                     err => {
+                        self.builder.start_node(ERROR.into());
                         self.builder.finish_node();
                         return Some(err);
                     }
@@ -273,7 +285,7 @@ fn parse(text: &str) -> Parse {
         builder: GreenNodeBuilder::new(),
         errors: Vec::new(),
     }
-    .parse()
+        .parse()
 }
 
 type SyntaxNode = rowan::SyntaxNode<Lang>;
@@ -333,20 +345,32 @@ fn lex(text: &str) -> Vec<(SyntaxKind, SmolStr)> {
 
 #[cfg(test)]
 mod tests {
+    /*    use super::*;
+
+        #[test]
+        fn it_lexes() {
+            let text = r"(\x -> x)";
+            let tokens = lex(text);
+            println!("{:?}", tokens)
+        }
+
+        #[test]
+        fn it_parses() {
+            let text = r"(\ -> x) (";
+            let parse = parse(text);
+            let node = parse.syntax();
+            println!("{}\n{:#?}\n{:#?}", text, parse.errors, node);
+        }*/
+
+    use insta::assert_debug_snapshot;
     use super::*;
 
     #[test]
-    fn it_lexes() {
-        let text = r"(\x -> x)";
-        let mut tokens = lex(text);
-        println!("{:?}", tokens)
-    }
-
-    #[test]
-    fn it_parses() {
-        let text = r"(\ -> x) (";
+    fn test_snapshots() {
+        let text = r"(\x ->)";
         let parse = parse(text);
-        let mut node = parse.syntax();
-        println!("{}\n{:#?}\n{:#?}", text, parse.errors, node);
+        let node = parse.syntax();
+
+        assert_debug_snapshot!("parse simple lambda", (text, parse.errors, node));
     }
 }

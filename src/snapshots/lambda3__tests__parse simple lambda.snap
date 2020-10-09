@@ -1,0 +1,21 @@
+---
+source: src/lib.rs
+expression: "(text, parse.errors, node)"
+---
+(
+    "(\\x ->)",
+    [
+        "Expected expression",
+    ],
+    ROOT@0..7
+      PARENTHESIZED@0..7
+        L_PAREN@0..1 "("
+        LAMBDA@1..6
+          LAM@1..2 "\\"
+          WORD@2..3 "x"
+          WHITESPACE@3..4 " "
+          ARROW@4..6 "->"
+          ERROR@6..6
+        R_PAREN@6..7 ")"
+    ,
+)
