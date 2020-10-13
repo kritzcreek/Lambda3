@@ -204,7 +204,7 @@ impl Parser {
                         self.builder.finish_node();
                         self.builder.finish_node();
                         self.errors.push(err);
-                        return None
+                        return None;
                     }
                 }
             }
@@ -364,7 +364,10 @@ mod tests {
         let parse = parse(text);
         let node = parse.syntax();
 
-        assert_debug_snapshot!("parse simple lambda with missing body", (text, parse.errors, node));
+        assert_debug_snapshot!(
+            "parse simple lambda with missing body",
+            (text, parse.errors, node)
+        );
     }
 
     #[test]
@@ -373,6 +376,9 @@ mod tests {
         let parse = parse(text);
         let node = parse.syntax();
 
-        assert_debug_snapshot!("parse simple lambda with missing body and rparen", (text, parse.errors, node));
+        assert_debug_snapshot!(
+            "parse simple lambda with missing body and rparen",
+            (text, parse.errors, node)
+        );
     }
 }
