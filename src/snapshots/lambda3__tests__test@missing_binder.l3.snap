@@ -1,0 +1,24 @@
+---
+source: src/lib.rs
+expression: "(input, parse.errors, node)"
+input_file: src/examples/missing_binder.l3
+---
+(
+    "(\\ -> x)",
+    [
+        "expected binder, got ARROW",
+    ],
+    ROOT@0..8
+      PARENTHESIZED@0..8
+        L_PAREN@0..1 "("
+        LAMBDA@1..7
+          LAM@1..2 "\\"
+          WHITESPACE@2..3 " "
+          ERROR@3..3
+          ARROW@3..5 "->"
+          WHITESPACE@5..6 " "
+          VAR@6..7
+            WORD@6..7 "x"
+        R_PAREN@7..8 ")"
+    ,
+)
