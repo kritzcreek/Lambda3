@@ -135,9 +135,7 @@ impl Parser {
             match self.atom() {
                 None => break,
                 Some(ExprRes::Lul(s)) => {
-                    self.builder.start_node(ERROR.into());
-                    self.errors.push(s);
-                    self.builder.finish_node();
+                    self.report_error(s);
                 }
                 Some(ExprRes::Ok) => {
                     self.builder.start_node_at(checkpoint, APPLICATION.into());
@@ -151,69 +149,85 @@ impl Parser {
         ExprRes::Ok
     }
 
+    // Option<ExprRes>
+    // Some(OK) => atom, continue
+    // Some(Err) => handle recovery
+    // None => no atom, no tokens
+
     fn atom(&mut self) -> Option<ExprRes> {
         // Eat leading whitespace
         self.skip_ws();
         // Either a list, an atom, a closing paren,
         // or an eof.
         match self.current() {
-            L_PAREN => {
-                self.builder.start_node(PARENTHESIZED.into());
-                self.bump(L_PAREN);
-                self.expr();
-                if !self.eat(R_PAREN) {
-                    self.builder.start_node(ERROR.into());
-                    self.errors.push(format!(
-                        "unexpected token {:?}, expected ')'",
-                        self.current()
-                    ));
-                    while self.current() != R_PAREN && self.current() != EOF {
-                        self.bump_any()
-                    }
-                    self.builder.finish_node();
-                    self.eat(R_PAREN);
-                }
-                self.builder.finish_node();
-            }
-            WORD => {
-                self.builder.start_node(VAR.into());
-                self.bump(WORD);
-                self.builder.finish_node();
-            }
-            LAM => {
-                self.builder.start_node(LAMBDA.into());
-                self.bump(LAM);
-                self.skip_ws();
-                if !self.eat(WORD) {
-                    self.builder.start_node(ERROR.into());
-                    self.builder.finish_node();
-                    self.errors
-                        .push(format!("expected binder, got {:?}", self.current()));
-                }
-                self.skip_ws();
-
-                if !self.eat(ARROW) {
-                    self.builder.finish_node();
-                    return Some(ExprRes::Lul(format!(
-                        "expected '->', got {:?}",
-                        self.current()
-                    )));
-                }
-                match self.expr() {
-                    ExprRes::Ok => self.builder.finish_node(),
-                    ExprRes::Lul(err) => {
-                        self.builder.start_node(ERROR.into());
-                        self.builder.finish_node();
-                        self.builder.finish_node();
-                        self.errors.push(err);
-                        return None;
-                    }
-                }
-            }
+            L_PAREN => self.parse_parenthesized(),
+            WORD => self.parse_var(),
+            LAM => return self.parse_lambda(),
             ERROR => self.bump_any(),
             _ => return None,
         }
+
         Some(ExprRes::Ok)
+    }
+
+    fn parse_parenthesized(&mut self) {
+        self.builder.start_node(PARENTHESIZED.into());
+        self.bump(L_PAREN);
+        self.expr();
+        if !self.eat(R_PAREN) {
+            self.builder.start_node(ERROR.into());
+            self.errors.push(format!(
+                "unexpected token {:?}, expected ')'",
+                self.current()
+            ));
+            while self.current() != R_PAREN && self.current() != EOF {
+                self.bump_any()
+            }
+            self.builder.finish_node();
+            self.eat(R_PAREN);
+        }
+        self.builder.finish_node();
+    }
+
+    fn parse_var(&mut self) {
+        self.builder.start_node(VAR.into());
+        self.bump(WORD);
+        self.builder.finish_node();
+    }
+
+    fn parse_lambda(&mut self) -> Option<ExprRes> {
+        self.builder.start_node(LAMBDA.into());
+        self.bump(LAM);
+        self.skip_ws();
+        if !self.eat(WORD) {
+            self.report_error(format!("expected binder, got {:?}", self.current()))
+        }
+        self.skip_ws();
+
+        if !self.eat(ARROW) {
+            self.builder.finish_node();
+            return Some(ExprRes::Lul(format!(
+                "expected '->', got {:?}",
+                self.current()
+            )));
+        }
+
+        match self.expr() {
+            ExprRes::Ok => self.builder.finish_node(),
+            ExprRes::Lul(err) => {
+                self.report_error(err);
+                self.builder.finish_node();
+                return None;
+            }
+        }
+
+        Some(ExprRes::Ok)
+    }
+
+    fn report_error(&mut self, msg: String) {
+        self.builder.start_node(ERROR.into());
+        self.errors.push(msg);
+        self.builder.finish_node();
     }
 
     fn nth(&self, n: usize) -> SyntaxKind {
