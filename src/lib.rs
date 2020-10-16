@@ -182,11 +182,10 @@ impl Parser {
                 self.bump(LAM);
                 self.skip_ws();
                 if !self.eat(WORD) {
+                    self.builder.start_node(ERROR.into());
                     self.builder.finish_node();
-                    return Some(ExprRes::Lul(format!(
-                        "expected binder, got {:?}",
-                        self.current()
-                    )));
+                    self.errors
+                        .push(format!("expected binder, got {:?}", self.current()));
                 }
                 self.skip_ws();
 
