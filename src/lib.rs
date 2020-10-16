@@ -163,12 +163,15 @@ impl Parser {
                 self.expr();
                 if !self.eat(R_PAREN) {
                     self.builder.start_node(ERROR.into());
-                    self.builder.finish_node();
-                    self.builder.finish_node();
-                    return Some(ExprRes::Lul(format!(
-                        "UNEXPECTED TOKEN {:?}",
+                    self.errors.push(format!(
+                        "unexpected token {:?}, expected ')'",
                         self.current()
-                    )));
+                    ));
+                    while self.current() != R_PAREN && self.current() != EOF {
+                        self.bump_any()
+                    }
+                    self.builder.finish_node();
+                    self.eat(R_PAREN);
                 }
                 self.builder.finish_node();
             }
