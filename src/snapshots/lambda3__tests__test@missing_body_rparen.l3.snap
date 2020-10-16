@@ -1,14 +1,16 @@
 ---
 source: src/lib.rs
-expression: "(text, parse.errors, node)"
+expression: "(input, parse.errors, node)"
+input_file: src/examples/missing_body_rparen.l3
 ---
 (
-    "(\\x ->)",
+    "(\\x ->",
     [
         "Expected expression",
+        "UNEXPECTED TOKEN EOF",
     ],
-    ROOT@0..7
-      PARENTHESIZED@0..7
+    ROOT@0..6
+      PARENTHESIZED@0..6
         L_PAREN@0..1 "("
         LAMBDA@1..6
           LAM@1..2 "\\"
@@ -16,6 +18,6 @@ expression: "(text, parse.errors, node)"
           WHITESPACE@3..4 " "
           ARROW@4..6 "->"
           ERROR@6..6
-        R_PAREN@6..7 ")"
+        ERROR@6..6
     ,
 )

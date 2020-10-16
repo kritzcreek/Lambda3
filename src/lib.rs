@@ -68,10 +68,10 @@ use rowan::GreenNodeBuilder;
 
 /// The parse results are stored as a "green tree".
 /// We'll discuss working with the results later
-struct Parse {
-    green_node: GreenNode,
+pub struct Parse {
+    pub green_node: GreenNode,
     #[allow(unused)]
-    errors: Vec<String>,
+    pub errors: Vec<String>,
 }
 
 struct Parser {
@@ -128,7 +128,7 @@ impl Parser {
             Some(ExprRes::Ok) => (),
             Some(ExprRes::Lul(err)) => {
                 self.errors.push(err.clone());
-                return ExprRes::Lul(err.to_string());
+                return ExprRes::Lul(err);
             }
         }
         loop {
@@ -270,7 +270,7 @@ impl Parser {
     // }
 }
 
-fn parse(text: &str) -> Parse {
+pub fn parse(text: &str) -> Parse {
     let mut tokens = lex(text);
     tokens.reverse();
     Parser {
@@ -338,47 +338,19 @@ fn lex(text: &str) -> Vec<(SyntaxKind, SmolStr)> {
 
 #[cfg(test)]
 mod tests {
-    /*    use super::*;
-
-    #[test]
-    fn it_lexes() {
-        let text = r"(\x -> x)";
-        let tokens = lex(text);
-        println!("{:?}", tokens)
-    }
-
-    #[test]
-    fn it_parses() {
-        let text = r"(\ -> x) (";
-        let parse = parse(text);
-        let node = parse.syntax();
-        println!("{}\n{:#?}\n{:#?}", text, parse.errors, node);
-    }*/
-
     use super::*;
-    use insta::assert_debug_snapshot;
+    use insta::{assert_debug_snapshot, glob};
 
     #[test]
-    fn missing_body() {
-        let text = r"(\x ->)";
-        let parse = parse(text);
-        let node = parse.syntax();
+    fn test() {
+        use std::fs;
 
-        assert_debug_snapshot!(
-            "parse simple lambda with missing body",
-            (text, parse.errors, node)
-        );
-    }
+        glob!("examples/*.l3", |path| {
+            let input = fs::read_to_string(path).unwrap();
+            let parse = parse(&input);
+            let node = parse.syntax();
 
-    #[test]
-    fn missing_body_rparen() {
-        let text = r"(\x ->";
-        let parse = parse(text);
-        let node = parse.syntax();
-
-        assert_debug_snapshot!(
-            "parse simple lambda with missing body and rparen",
-            (text, parse.errors, node)
-        );
+            assert_debug_snapshot!((input, parse.errors, node));
+        });
     }
 }
