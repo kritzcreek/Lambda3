@@ -7,7 +7,7 @@ input_file: src/examples/missing_body_rparen.l3
     "(\\x ->",
     [
         "Expected expression",
-        "UNEXPECTED TOKEN EOF",
+        "unexpected token EOF, expected \')\'",
     ],
     ROOT@0..6
       PARENTHESIZED@0..6

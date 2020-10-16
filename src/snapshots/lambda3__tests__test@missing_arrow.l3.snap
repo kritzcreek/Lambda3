@@ -1,0 +1,38 @@
+---
+source: src/lib.rs
+expression: "(input, parse.errors, node)"
+input_file: src/examples/missing_arrow.l3
+---
+(
+    "(\\x  x x) (\\y -> y)",
+    [
+        "expected \'->\', got WORD",
+        "unexpected token WORD, expected \')\'",
+    ],
+    ROOT@0..19
+      APPLICATION@0..19
+        PARENTHESIZED@0..9
+          L_PAREN@0..1 "("
+          LAMBDA@1..5
+            LAM@1..2 "\\"
+            WORD@2..3 "x"
+            WHITESPACE@3..5 "  "
+          ERROR@5..8
+            WORD@5..6 "x"
+            WHITESPACE@6..7 " "
+            WORD@7..8 "x"
+          R_PAREN@8..9 ")"
+        WHITESPACE@9..10 " "
+        PARENTHESIZED@10..19
+          L_PAREN@10..11 "("
+          LAMBDA@11..18
+            LAM@11..12 "\\"
+            WORD@12..13 "y"
+            WHITESPACE@13..14 " "
+            ARROW@14..16 "->"
+            WHITESPACE@16..17 " "
+            VAR@17..18
+              WORD@17..18 "y"
+          R_PAREN@18..19 ")"
+    ,
+)
