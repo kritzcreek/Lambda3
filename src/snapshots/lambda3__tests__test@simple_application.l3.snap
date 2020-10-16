@@ -1,0 +1,17 @@
+---
+source: src/lib.rs
+expression: "(input, parse.errors, node)"
+input_file: src/examples/simple_application.l3
+---
+(
+    "x x",
+    [],
+    ROOT@0..3
+      APPLICATION@0..3
+        VAR@0..1
+          WORD@0..1 "x"
+        WHITESPACE@1..2 " "
+        VAR@2..3
+          WORD@2..3 "x"
+    ,
+)
