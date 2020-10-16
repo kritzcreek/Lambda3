@@ -1,0 +1,22 @@
+---
+source: src/lib.rs
+expression: "(input, parse.errors, node)"
+input_file: src/examples/simple.l3
+---
+(
+    "(\\x -> x)",
+    [],
+    ROOT@0..9
+      PARENTHESIZED@0..9
+        L_PAREN@0..1 "("
+        LAMBDA@1..8
+          LAM@1..2 "\\"
+          WORD@2..3 "x"
+          WHITESPACE@3..4 " "
+          ARROW@4..6 "->"
+          WHITESPACE@6..7 " "
+          VAR@7..8
+            WORD@7..8 "x"
+        R_PAREN@8..9 ")"
+    ,
+)
