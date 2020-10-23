@@ -9,7 +9,7 @@ use rowan::SmolStr;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[allow(non_camel_case_types)]
 #[repr(u16)]
-enum SyntaxKind {
+pub enum SyntaxKind {
     L_PAREN = 0, // '('
     R_PAREN,     // ')'
     LAM,         // '\'
@@ -121,7 +121,6 @@ impl Parser {
     }
     fn expr(&mut self) -> ExprRes {
         let mut is_application = false;
-        self.skip_ws();
         let checkpoint = self.builder.checkpoint();
         match self.atom() {
             None => return ExprRes::Lul("Expected expression".to_string()),
@@ -155,8 +154,6 @@ impl Parser {
     // None => no atom, no tokens
 
     fn atom(&mut self) -> Option<ExprRes> {
-        // Eat leading whitespace
-        self.skip_ws();
         // Either a list, an atom, a closing paren,
         // or an eof.
         match self.current() {
@@ -198,12 +195,9 @@ impl Parser {
     fn parse_lambda(&mut self) -> Option<ExprRes> {
         self.builder.start_node(LAMBDA.into());
         self.bump(LAM);
-        self.skip_ws();
         if !self.eat(WORD) {
             self.report_error(format!("expected binder, got {:?}", self.current()))
         }
-        self.skip_ws();
-
         if !self.eat(ARROW) {
             self.builder.finish_node();
             return Some(ExprRes::Lul(format!(
@@ -231,10 +225,27 @@ impl Parser {
     }
 
     fn nth(&self, n: usize) -> SyntaxKind {
-        if n >= self.tokens.len() {
-            return EOF;
+        let mut n_real: usize = 0;
+        let mut m: usize = n;
+        loop {
+            if n_real + m >= self.tokens.len() {
+                return EOF;
+            }
+
+            let token = self.tokens[self.tokens.len() - n_real - 1].0;
+            if token == WHITESPACE {
+                n_real += 1
+            }
+            else {
+                if m == 0 {
+                    return token
+                }
+                else {
+                    m -= 1;
+                    n_real += 1;
+                }
+            }
         }
-        self.tokens[self.tokens.len() - n - 1].0
     }
 
     /// Peek at the first unprocessed token
@@ -254,6 +265,7 @@ impl Parser {
         if self.current() != kind {
             return false;
         }
+        self.skip_ws();
         self.bump_any();
         true
     }
@@ -272,7 +284,7 @@ impl Parser {
     }
 
     fn skip_ws(&mut self) {
-        while self.current() == WHITESPACE {
+        while self.tokens.last().map(|t|t.0) == Some(WHITESPACE) {
             self.bump_any()
         }
     }
@@ -311,7 +323,7 @@ impl Parse {
 
 /// Split the input string into a flat list of tokens
 /// (such as L_PAREN, WORD, and WHITESPACE)
-fn lex(text: &str) -> Vec<(SyntaxKind, SmolStr)> {
+pub fn lex(text: &str) -> Vec<(SyntaxKind, SmolStr)> {
     fn tok(t: SyntaxKind) -> m_lexer::TokenKind {
         m_lexer::TokenKind(rowan::SyntaxKind::from(t).0)
     }
