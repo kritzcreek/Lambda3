@@ -235,15 +235,11 @@ impl Parser {
             let token = self.tokens[self.tokens.len() - n_real - 1].0;
             if token == WHITESPACE {
                 n_real += 1
-            }
-            else {
-                if m == 0 {
-                    return token
-                }
-                else {
-                    m -= 1;
-                    n_real += 1;
-                }
+            } else if m == 0 {
+                return token;
+            } else {
+                m -= 1;
+                n_real += 1;
             }
         }
     }
@@ -284,7 +280,7 @@ impl Parser {
     }
 
     fn skip_ws(&mut self) {
-        while self.tokens.last().map(|t|t.0) == Some(WHITESPACE) {
+        while self.tokens.last().map(|t| t.0) == Some(WHITESPACE) {
             self.bump_any()
         }
     }
