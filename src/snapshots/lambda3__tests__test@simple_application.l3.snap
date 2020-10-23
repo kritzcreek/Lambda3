@@ -10,8 +10,8 @@ input_file: src/examples/simple_application.l3
       APPLICATION@0..3
         VAR@0..1
           WORD@0..1 "x"
-        WHITESPACE@1..2 " "
-        VAR@2..3
+        VAR@1..3
+          WHITESPACE@1..2 " "
           WORD@2..3 "x"
     ,
 )
