@@ -44,7 +44,7 @@ impl From<SyntaxKind> for rowan::SyntaxKind {
 /// these two SyntaxKind types, allowing for a nicer SyntaxNode API where
 /// "kinds" are values from our `enum SyntaxKind`, instead of plain u16 values.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-enum Lang {}
+pub enum Lang {}
 
 impl rowan::Language for Lang {
     type Kind = SyntaxKind;
@@ -305,7 +305,7 @@ pub fn parse(text: &str) -> Parse {
     .parse()
 }
 
-type SyntaxNode = rowan::SyntaxNode<Lang>;
+pub type SyntaxNode = rowan::SyntaxNode<Lang>;
 #[allow(unused)]
 type SyntaxToken = rowan::SyntaxToken<Lang>;
 #[allow(unused)]
@@ -314,6 +314,10 @@ type SyntaxElement = rowan::NodeOrToken<SyntaxNode, SyntaxToken>;
 impl Parse {
     fn syntax(&self) -> SyntaxNode {
         SyntaxNode::new_root(self.green_node.clone())
+    }
+
+    pub fn root(&self) -> Root {
+        Root::cast(self.syntax()).unwrap()
     }
 }
 
@@ -358,6 +362,72 @@ pub fn lex(text: &str) -> Vec<(SyntaxKind, SmolStr)> {
             Some((kind, s))
         })
         .collect()
+}
+
+macro_rules! ast_node {
+    ($ast:ident, $kind:ident) => {
+        #[derive(PartialEq, Eq, Hash)]
+        #[repr(transparent)]
+        pub struct $ast(pub SyntaxNode);
+        impl $ast {
+            #[allow(unused)]
+            fn cast(node: SyntaxNode) -> Option<Self> {
+                if node.kind() == $kind {
+                    Some(Self(node))
+                } else {
+                    None
+                }
+            }
+        }
+    };
+}
+
+ast_node!(Root, ROOT);
+ast_node!(Var, VAR);
+ast_node!(Lambda, LAMBDA);
+ast_node!(Application, APPLICATION);
+
+#[derive(PartialEq, Eq, Hash, Debug)]
+#[repr(transparent)]
+pub struct Expr(SyntaxNode);
+
+pub enum ExprKind {
+    Var(Var),
+    Lambda(Lambda),
+    Application(Application),
+}
+
+impl Expr {
+    fn cast(node: SyntaxNode) -> Option<Self> {
+        if Var::cast(node.clone()).is_some()
+            || Lambda::cast(node.clone()).is_some()
+            || Application::cast(node.clone()).is_some()
+        {
+            Some(Expr(node))
+        } else {
+            None
+        }
+    }
+
+    pub fn kind(&self) -> ExprKind {
+        Var::cast(self.0.clone())
+            .map(ExprKind::Var)
+            .or_else(|| Lambda::cast(self.0.clone()).map(ExprKind::Lambda))
+            .or_else(|| Application::cast(self.0.clone()).map(ExprKind::Application))
+            .unwrap()
+    }
+}
+
+impl Root {
+    pub fn expr(&self) -> Option<Expr> {
+        self.0.children().find_map(Expr::cast)
+    }
+}
+
+impl Lambda {
+    pub fn body(&self) -> Option<Expr> {
+        self.0.children().find_map(Expr::cast)
+    }
 }
 
 #[cfg(test)]
