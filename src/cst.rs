@@ -366,7 +366,7 @@ pub fn lex(text: &str) -> Vec<(SyntaxKind, SmolStr)> {
 
 macro_rules! ast_node {
     ($ast:ident, $kind:ident) => {
-        #[derive(PartialEq, Eq, Hash)]
+        #[derive(PartialEq, Eq, Hash, Debug)]
         #[repr(transparent)]
         pub struct $ast(pub SyntaxNode);
         impl $ast {
@@ -391,6 +391,7 @@ ast_node!(Application, APPLICATION);
 #[repr(transparent)]
 pub struct Expr(SyntaxNode);
 
+#[derive(Debug)]
 pub enum ExprKind {
     Var(Var),
     Lambda(Lambda),
@@ -424,9 +425,39 @@ impl Root {
     }
 }
 
+pub fn first_word(node: &SyntaxNode) -> Option<String> {
+    node.children_with_tokens().find_map(|node| {
+        if node.kind() == WORD {
+            Some(node.as_token().unwrap().text().to_string())
+        } else {
+            None
+        }
+    })
+}
+
 impl Lambda {
+    pub fn binder(&self) -> Option<String> {
+        first_word(&self.0)
+    }
+
     pub fn body(&self) -> Option<Expr> {
         self.0.children().find_map(Expr::cast)
+    }
+}
+
+impl Var {
+    pub fn name(&self) -> String {
+        first_word(&self.0).unwrap()
+    }
+}
+
+impl Application {
+    pub fn func(&self) -> Expr {
+        self.0.children().filter_map(Expr::cast).nth(0).unwrap()
+    }
+
+    pub fn arg(&self) -> Expr {
+        self.0.children().filter_map(Expr::cast).nth(1).unwrap()
     }
 }
 
