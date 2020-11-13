@@ -1,5 +1,5 @@
 ---
-source: src/lib.rs
+source: src/cst.rs
 expression: "(input, parse.errors, node)"
 input_file: src/examples/missing_binder.l3
 ---

@@ -1,8 +1,8 @@
-use lambda3::{Expr, ExprKind};
+use lambda3::cst::{Expr, ExprKind, self};
 
 fn main() {
     println!("Ok cool");
-    let expr = lambda3::parse("\\x -> \\ -> x y").root().expr().unwrap();
+    let expr = cst::parse("\\x -> \\ -> x y").root().expr().unwrap();
 
     match expr.kind() {
         ExprKind::Var(var) => {}
