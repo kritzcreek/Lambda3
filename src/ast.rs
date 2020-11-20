@@ -7,6 +7,8 @@ pub enum Expr {
     Var(String),
     Lambda(String, Rc<Expr>),
     App(Rc<Expr>, Rc<Expr>),
+    IntLit(i32),
+    BoolLit(bool)
 }
 
 impl Expr {
@@ -23,6 +25,12 @@ impl Expr {
                 let func = Self::from_cst(app.func())?;
                 let arg = Self::from_cst(app.arg())?;
                 Some(Expr::App(Rc::new(func), Rc::new(arg)))
+            }
+            ExprKind::IntLit(int) => {
+                Some(Expr::IntLit(int.value()))
+            }
+            ExprKind::BooleanLit(bool) => {
+                Some(Expr::BoolLit(bool.value()))
             }
         }
     }
