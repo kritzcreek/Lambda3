@@ -24,6 +24,9 @@ pub enum SyntaxKind {
     LAM,         // '\'
     ARROW,       // '->'
     WORD,        // 'x'
+    INT_LIT,     // 42
+    TRUE_LIT,     // true
+    FALSE_LIT,     // true
     WHITESPACE,  // whitespaces is explicit
     ERROR,       // as well as errors
     EOF,         // end of file
@@ -32,6 +35,7 @@ pub enum SyntaxKind {
     PARENTHESIZED, // `(+ 2 3)`
     BINDER,        // lambda binder
     VAR,           // wraps a WORD token
+    LITERAL,       // wraps a INT_LIT, TRUE_LIT, ... token
     LAMBDA,        // a Lambda abstraction
     APPLICATION,   // a function application
     ROOT,          // The top-level node
@@ -118,6 +122,7 @@ impl Parser {
             errors: self.errors,
         }
     }
+
     fn expr(&mut self) -> ExprRes {
         let mut is_application = false;
         let checkpoint = self.builder.checkpoint();
@@ -158,6 +163,7 @@ impl Parser {
         match self.current() {
             L_PAREN => self.parse_parenthesized(),
             WORD => self.parse_var(),
+            INT_LIT | TRUE_LIT | FALSE_LIT => self.parse_literal(),
             LAM => return self.parse_lambda(),
             ERROR => self.bump_any(),
             _ => return None,
@@ -188,6 +194,12 @@ impl Parser {
     fn parse_var(&mut self) {
         self.builder.start_node(VAR.into());
         self.bump(WORD);
+        self.builder.finish_node();
+    }
+
+    fn parse_literal(&mut self) {
+        self.builder.start_node(LITERAL.into());
+        self.eat_any();
         self.builder.finish_node();
     }
 
@@ -271,6 +283,11 @@ impl Parser {
         true
     }
 
+    fn eat_any(&mut self) {
+        self.skip_ws();
+        self.bump_any();
+    }
+
     /// Advance one token, adding it to the current branch of the tree builder.
     fn bump_any(&mut self) {
         if self.current() == EOF {
@@ -339,8 +356,11 @@ pub fn lex(text: &str) -> Vec<(SyntaxKind, SmolStr)> {
             2 => LAM,
             3 => ARROW,
             4 => WORD,
-            5 => WHITESPACE,
-            6 => ERROR,
+            5 => INT_LIT,
+            6 => TRUE_LIT,
+            7 => FALSE_LIT,
+            8 => WHITESPACE,
+            9 => ERROR,
             _ => unreachable!(),
         }
     }
@@ -352,6 +372,9 @@ pub fn lex(text: &str) -> Vec<(SyntaxKind, SmolStr)> {
             (tok(R_PAREN), r"\)"),
             (tok(LAM), r"\\"),
             (tok(ARROW), r"->"),
+            (tok(INT_LIT), r"\d+"),
+            (tok(TRUE_LIT), r"true"),
+            (tok(FALSE_LIT), r"false"),
             (tok(WORD), r"[\w]+"),
             (tok(WHITESPACE), r"\s+"),
         ])
@@ -387,10 +410,50 @@ macro_rules! ast_node {
     };
 }
 
+macro_rules! lit_node {
+    ($ast:ident, $kind:ident) => {
+        #[derive(PartialEq, Eq, Hash, Debug)]
+        #[repr(transparent)]
+        pub struct $ast(pub SyntaxNode);
+        impl $ast {
+            #[allow(unused)]
+            fn cast(node: SyntaxNode) -> Option<Self> {
+                if node.kind() == LITERAL && first_token(&node)?.kind() == $kind {
+                    Some(Self(node))
+                } else {
+                    None
+                }
+            }
+        }
+    };
+    ($ast:ident, $kind1:ident, $kind2:ident) => {
+        #[derive(PartialEq, Eq, Hash, Debug)]
+        #[repr(transparent)]
+        pub struct $ast(pub SyntaxNode);
+        impl $ast {
+            #[allow(unused)]
+            fn cast(node: SyntaxNode) -> Option<Self> {
+                if node.kind() == LITERAL {
+                    let token = first_token(&node)?.kind();
+                    if token == $kind1 || token == $kind2 {
+                        Some(Self(node))
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                }
+            }
+        }
+    };
+}
+
 ast_node!(Root, ROOT);
 ast_node!(Var, VAR);
 ast_node!(Lambda, LAMBDA);
 ast_node!(Application, APPLICATION);
+lit_node!(IntLit, INT_LIT);
+lit_node!(BooleanLit, TRUE_LIT, FALSE_LIT);
 
 #[derive(PartialEq, Eq, Hash, Debug)]
 #[repr(transparent)]
@@ -401,6 +464,8 @@ pub enum ExprKind {
     Var(Var),
     Lambda(Lambda),
     Application(Application),
+    IntLit(IntLit),
+    BooleanLit(BooleanLit)
 }
 
 impl Expr {
@@ -408,6 +473,8 @@ impl Expr {
         if Var::cast(node.clone()).is_some()
             || Lambda::cast(node.clone()).is_some()
             || Application::cast(node.clone()).is_some()
+            || IntLit::cast(node.clone()).is_some()
+            || BooleanLit::cast(node.clone()).is_some()
         {
             Some(Expr(node))
         } else {
@@ -420,6 +487,8 @@ impl Expr {
             .map(ExprKind::Var)
             .or_else(|| Lambda::cast(self.0.clone()).map(ExprKind::Lambda))
             .or_else(|| Application::cast(self.0.clone()).map(ExprKind::Application))
+            .or_else(|| IntLit::cast(self.0.clone()).map(ExprKind::IntLit))
+            .or_else(|| BooleanLit::cast(self.0.clone()).map(ExprKind::BooleanLit))
             .unwrap()
     }
 }
@@ -428,6 +497,16 @@ impl Root {
     pub fn expr(&self) -> Option<Expr> {
         self.0.children().find_map(Expr::cast)
     }
+}
+
+pub fn first_token(node: &SyntaxNode) -> Option<SyntaxToken> {
+    node.children_with_tokens().find_map(|node| {
+        if node.kind() != WHITESPACE {
+            node.as_token().cloned()
+        } else {
+            None
+        }
+    })
 }
 
 pub fn first_word(node: &SyntaxNode) -> Option<String> {
@@ -456,6 +535,18 @@ impl Lambda {
 impl Var {
     pub fn name(&self) -> String {
         first_word(&self.0).unwrap()
+    }
+}
+
+impl IntLit {
+    pub fn value(&self) -> i32 {
+        first_token(&self.0).unwrap().text().parse().unwrap()
+    }
+}
+
+impl BooleanLit {
+    pub fn value(&self) -> bool {
+        first_token(&self.0).unwrap().kind() == TRUE_LIT
     }
 }
 
