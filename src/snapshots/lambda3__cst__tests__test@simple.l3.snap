@@ -11,7 +11,8 @@ input_file: src/examples/simple.l3
         L_PAREN@0..1 "("
         LAMBDA@1..8
           LAM@1..2 "\\"
-          WORD@2..3 "x"
+          BINDER@2..3
+            WORD@2..3 "x"
           WHITESPACE@3..4 " "
           ARROW@4..6 "->"
           VAR@6..8
