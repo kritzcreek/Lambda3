@@ -14,7 +14,8 @@ input_file: src/examples/missing_body_rparen.l3
         L_PAREN@0..1 "("
         LAMBDA@1..6
           LAM@1..2 "\\"
-          WORD@2..3 "x"
+          BINDER@2..3
+            WORD@2..3 "x"
           WHITESPACE@3..4 " "
           ARROW@4..6 "->"
           ERROR@6..6

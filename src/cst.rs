@@ -1,4 +1,13 @@
+/// GreenNode is an immutable tree, which is cheap to change,
+/// but doesn't contain offsets and parent pointers.
+use rowan::GreenNode;
+/// You can construct GreenNodes by hand, but a builder
+/// is helpful for top-down parsers: it maintains a stack
+/// of currently in-progress nodes
+use rowan::GreenNodeBuilder;
 use rowan::SmolStr;
+
+use SyntaxKind::*;
 
 // - Lossless
 // - Incremental
@@ -21,13 +30,12 @@ pub enum SyntaxKind {
 
     // composite nodes
     PARENTHESIZED, // `(+ 2 3)`
-    VAR,           // `+`, `15`, wraps a WORD token
+    BINDER,        // lambda binder
+    VAR,           // wraps a WORD token
     LAMBDA,        // a Lambda abstraction
     APPLICATION,   // a function application
     ROOT,          // The top-level node
 }
-
-use SyntaxKind::*;
 
 /// Some boilerplate is needed, as rowan settled on using its own
 /// `struct SyntaxKind(u16)` internally, instead of accepting the
@@ -56,15 +64,6 @@ impl rowan::Language for Lang {
         kind.into()
     }
 }
-
-/// GreenNode is an immutable tree, which is cheap to change,
-/// but doesn't contain offsets and parent pointers.
-use rowan::GreenNode;
-
-/// You can construct GreenNodes by hand, but a builder
-/// is helpful for top-down parsers: it maintains a stack
-/// of currently in-progress nodes
-use rowan::GreenNodeBuilder;
 
 /// The parse results are stored as a "green tree".
 /// We'll discuss working with the results later
@@ -195,9 +194,15 @@ impl Parser {
     fn parse_lambda(&mut self) -> Option<ExprRes> {
         self.builder.start_node(LAMBDA.into());
         self.bump(LAM);
-        if !self.eat(WORD) {
+
+        let checkpoint = self.builder.checkpoint();
+        if self.eat(WORD) {
+            self.builder.start_node_at(checkpoint, BINDER.into());
+            self.builder.finish_node();
+        } else {
             self.report_error(format!("expected binder, got {:?}", self.current()))
         }
+
         if !self.eat(ARROW) {
             self.builder.finish_node();
             return Some(ExprRes::Lul(format!(
@@ -437,7 +442,10 @@ pub fn first_word(node: &SyntaxNode) -> Option<String> {
 
 impl Lambda {
     pub fn binder(&self) -> Option<String> {
-        first_word(&self.0)
+        self.0
+            .children()
+            .find(|node| node.kind() == BINDER)
+            .and_then(|node| first_word(&node))
     }
 
     pub fn body(&self) -> Option<Expr> {
@@ -463,8 +471,9 @@ impl Application {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use insta::{assert_debug_snapshot, glob};
+
+    use super::*;
 
     #[test]
     fn test() {
