@@ -8,16 +8,16 @@ input_file: src/examples/missing_body.l3
     [
         "Expected expression",
     ],
-    ROOT@0..7
-      PARENTHESIZED@0..7
-        L_PAREN@0..1 "("
-        LAMBDA@1..6
-          LAM@1..2 "\\"
-          BINDER@2..3
-            WORD@2..3 "x"
-          WHITESPACE@3..4 " "
-          ARROW@4..6 "->"
-          ERROR@6..6
-        R_PAREN@6..7 ")"
+    RootE@0..7
+      ParenE@0..7
+        LParen@0..1 "("
+        LambdaE@1..6
+          Backslash@1..2 "\\"
+          VarP@2..3
+            Ident@2..3 "x"
+          Whitespace@3..4 " "
+          Arrow@4..6 "->"
+          Error@6..6
+        RParen@6..7 ")"
     ,
 )

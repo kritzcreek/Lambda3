@@ -6,18 +6,18 @@ input_file: src/examples/simple.l3
 (
     "(\\x -> x)",
     [],
-    ROOT@0..9
-      PARENTHESIZED@0..9
-        L_PAREN@0..1 "("
-        LAMBDA@1..8
-          LAM@1..2 "\\"
-          BINDER@2..3
-            WORD@2..3 "x"
-          WHITESPACE@3..4 " "
-          ARROW@4..6 "->"
-          VAR@6..8
-            WHITESPACE@6..7 " "
-            WORD@7..8 "x"
-        R_PAREN@8..9 ")"
+    RootE@0..9
+      ParenE@0..9
+        LParen@0..1 "("
+        LambdaE@1..8
+          Backslash@1..2 "\\"
+          VarP@2..3
+            Ident@2..3 "x"
+          Whitespace@3..4 " "
+          Arrow@4..6 "->"
+          VarE@6..8
+            Whitespace@6..7 " "
+            Ident@7..8 "x"
+        RParen@8..9 ")"
     ,
 )

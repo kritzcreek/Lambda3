@@ -1,8 +1,8 @@
 use logos::Logos;
 use num_derive::{FromPrimitive, ToPrimitive};
-use rowan::SyntaxNode;
+use rowan::SmolStr;
 
-pub(crate) fn lex_str<'a>(input: &'a str) -> Vec<Item<'a>> {
+pub fn lex_str<'a>(input: &'a str) -> Vec<Item> {
     let mut tokens = vec![];
     let mut lexer = Lexer::new(input);
 
@@ -17,13 +17,13 @@ pub(crate) fn lex_str<'a>(input: &'a str) -> Vec<Item<'a>> {
     unreachable!()
 }
 
-pub(crate) struct Lexer<'a> {
+pub struct Lexer<'a> {
     inner: logos::Lexer<'a, SyntaxKind>,
     lookahead: Option<(SyntaxKind, &'a str)>,
 }
 
 impl<'a> Lexer<'a> {
-    pub(crate) fn new(input: &'a str) -> Self {
+    pub fn new(input: &'a str) -> Self {
         Self {
             inner: SyntaxKind::lexer(input),
             lookahead: None,
@@ -35,15 +35,15 @@ fn is_whitespace(kind: SyntaxKind) -> bool {
     kind == SyntaxKind::Whitespace
 }
 
-pub(crate) type Item<'a> = (
-    Vec<(SyntaxKind, &'a str)>,
-    (SyntaxKind, &'a str),
+pub type Item = (
+    Vec<(SyntaxKind, SmolStr)>,
+    (SyntaxKind, SmolStr),
 );
 
 impl<'a> Iterator for Lexer<'a> {
     type Item = (
-        Vec<(SyntaxKind, &'a str)>,
-        (SyntaxKind, &'a str),
+        Vec<(SyntaxKind, SmolStr)>,
+        (SyntaxKind, SmolStr),
     );
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -54,13 +54,13 @@ impl<'a> Iterator for Lexer<'a> {
             let text = self.inner.slice();
 
             match kind {
-                None => return Some((leading, (SyntaxKind::Eof, ""))),
+                None => return Some((leading, (SyntaxKind::Eof, "".into()))),
                 Some(kind) => {
                     if !is_whitespace(kind) {
-                        return Some((leading, (kind, text)))
+                        return Some((leading, (kind, text.into())))
                     }
                     else {
-                        leading.push((kind, text));
+                        leading.push((kind, text.into()));
                     }
                 }
             }
@@ -70,7 +70,7 @@ impl<'a> Iterator for Lexer<'a> {
 
 #[derive(Debug, Copy, Clone, PartialEq, Logos, FromPrimitive, ToPrimitive)]
 #[repr(u16)]
-pub(crate) enum SyntaxKind {
+pub enum SyntaxKind {
     #[regex(r"\s")]
     Whitespace,
 
@@ -151,6 +151,7 @@ pub(crate) enum SyntaxKind {
 
     #[error]
     LexerError,
+    Error,
 
     Eof,
 
@@ -162,9 +163,8 @@ pub(crate) enum SyntaxKind {
     LambdaE,        // a func expression
     ApplicationE, // a function application
 
-    Root,
+    RootE,
 
     // Patterns
     VarP,
-
 }

@@ -6,19 +6,19 @@ input_file: src/examples/simple_boolean_literal_application.l3
 (
     "\\x -> true false",
     [],
-    ROOT@0..16
-      LAMBDA@0..16
-        LAM@0..1 "\\"
-        BINDER@1..2
-          WORD@1..2 "x"
-        WHITESPACE@2..3 " "
-        ARROW@3..5 "->"
-        APPLICATION@5..16
-          LITERAL@5..10
-            WHITESPACE@5..6 " "
-            TRUE_LIT@6..10 "true"
-          LITERAL@10..16
-            WHITESPACE@10..11 " "
-            FALSE_LIT@11..16 "false"
+    RootE@0..16
+      LambdaE@0..16
+        Backslash@0..1 "\\"
+        VarP@1..2
+          Ident@1..2 "x"
+        Whitespace@2..3 " "
+        Arrow@3..5 "->"
+        ApplicationE@5..16
+          LiteralE@5..10
+            Whitespace@5..6 " "
+            TrueKw@6..10 "true"
+          LiteralE@10..16
+            Whitespace@10..11 " "
+            FalseKw@11..16 "false"
     ,
 )

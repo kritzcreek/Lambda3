@@ -6,15 +6,15 @@ input_file: src/examples/simple_number_literal.l3
 (
     "\\x -> 42",
     [],
-    ROOT@0..8
-      LAMBDA@0..8
-        LAM@0..1 "\\"
-        BINDER@1..2
-          WORD@1..2 "x"
-        WHITESPACE@2..3 " "
-        ARROW@3..5 "->"
-        LITERAL@5..8
-          WHITESPACE@5..6 " "
-          INT_LIT@6..8 "42"
+    RootE@0..8
+      LambdaE@0..8
+        Backslash@0..1 "\\"
+        VarP@1..2
+          Ident@1..2 "x"
+        Whitespace@2..3 " "
+        Arrow@3..5 "->"
+        LiteralE@5..8
+          Whitespace@5..6 " "
+          NumberLit@6..8 "42"
     ,
 )

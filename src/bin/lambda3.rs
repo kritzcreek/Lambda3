@@ -3,7 +3,8 @@ use lambda3::ast;
 
 fn main() {
     println!("Ok cool");
-    let expr = cst::parse("\\x -> \\ -> x y").root().expr().unwrap();
+    let expr = cst::parse("x").root().expr().unwrap();
+
 
     let expr = cst::parse("\\x -> x").root().expr().unwrap();
     let expr = cst::parse("\\x -> x x").root().expr().unwrap();
