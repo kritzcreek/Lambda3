@@ -6,12 +6,12 @@ input_file: src/examples/simple_application.l3
 (
     "x x",
     [],
-    ROOT@0..3
-      APPLICATION@0..3
-        VAR@0..1
-          WORD@0..1 "x"
-        VAR@1..3
-          WHITESPACE@1..2 " "
-          WORD@2..3 "x"
+    RootE@0..3
+      ApplicationE@0..3
+        VarE@0..1
+          Ident@0..1 "x"
+        VarE@1..3
+          Whitespace@1..2 " "
+          Ident@2..3 "x"
     ,
 )

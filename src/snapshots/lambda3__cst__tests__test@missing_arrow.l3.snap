@@ -6,35 +6,36 @@ input_file: src/examples/missing_arrow.l3
 (
     "(\\x  x x) (\\y -> y)",
     [
-        "expected \'->\', got WORD",
-        "unexpected token WORD, expected \')\'",
+        "expected \'->\', got Ident",
+        "unexpected token Ident, expected \')\'",
     ],
-    ROOT@0..19
-      APPLICATION@0..19
-        PARENTHESIZED@0..9
-          L_PAREN@0..1 "("
-          LAMBDA@1..3
-            LAM@1..2 "\\"
-            BINDER@2..3
-              WORD@2..3 "x"
-          ERROR@3..8
-            WHITESPACE@3..5 "  "
-            WORD@5..6 "x"
-            WHITESPACE@6..7 " "
-            WORD@7..8 "x"
-          R_PAREN@8..9 ")"
-        PARENTHESIZED@9..19
-          WHITESPACE@9..10 " "
-          L_PAREN@10..11 "("
-          LAMBDA@11..18
-            LAM@11..12 "\\"
-            BINDER@12..13
-              WORD@12..13 "y"
-            WHITESPACE@13..14 " "
-            ARROW@14..16 "->"
-            VAR@16..18
-              WHITESPACE@16..17 " "
-              WORD@17..18 "y"
-          R_PAREN@18..19 ")"
+    RootE@0..19
+      ApplicationE@0..19
+        ParenE@0..9
+          LParen@0..1 "("
+          LambdaE@1..3
+            Backslash@1..2 "\\"
+            VarP@2..3
+              Ident@2..3 "x"
+          Error@3..8
+            Whitespace@3..4 " "
+            Whitespace@4..5 " "
+            Ident@5..6 "x"
+            Whitespace@6..7 " "
+            Ident@7..8 "x"
+          RParen@8..9 ")"
+        ParenE@9..19
+          Whitespace@9..10 " "
+          LParen@10..11 "("
+          LambdaE@11..18
+            Backslash@11..12 "\\"
+            VarP@12..13
+              Ident@12..13 "y"
+            Whitespace@13..14 " "
+            Arrow@14..16 "->"
+            VarE@16..18
+              Whitespace@16..17 " "
+              Ident@17..18 "y"
+          RParen@18..19 ")"
     ,
 )
