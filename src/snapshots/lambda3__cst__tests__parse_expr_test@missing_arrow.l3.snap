@@ -9,7 +9,7 @@ input_file: src/examples/expr/missing_arrow.l3
         "expected \'->\', got Ident",
         "unexpected token Ident, expected \')\'",
     ],
-    RootE@0..19
+    Root@0..19
       ApplicationE@0..19
         ParenE@0..9
           LParen@0..1 "("

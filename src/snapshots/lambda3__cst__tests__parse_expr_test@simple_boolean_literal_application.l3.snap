@@ -6,7 +6,7 @@ input_file: src/examples/expr/simple_boolean_literal_application.l3
 (
     "\\x -> true false",
     [],
-    RootE@0..16
+    Root@0..16
       LambdaE@0..16
         Backslash@0..1 "\\"
         VarP@1..2

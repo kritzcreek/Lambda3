@@ -1,0 +1,13 @@
+---
+source: src/cst.rs
+expression: "(input, parse.errors, node)"
+input_file: src/examples/types/simple_int_ty.l3
+---
+(
+    "Int",
+    [],
+    Root@0..3
+      IntTy@0..3
+        Int@0..3 "Int"
+    ,
+)

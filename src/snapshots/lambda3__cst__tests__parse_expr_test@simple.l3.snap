@@ -6,7 +6,7 @@ input_file: src/examples/expr/simple.l3
 (
     "(\\x -> x)",
     [],
-    RootE@0..9
+    Root@0..9
       ParenE@0..9
         LParen@0..1 "("
         LambdaE@1..8

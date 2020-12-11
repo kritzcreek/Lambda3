@@ -1,0 +1,21 @@
+---
+source: src/cst.rs
+expression: "(input, parse.errors, node)"
+input_file: src/examples/types/func_ty.l3
+---
+(
+    "Int->Bool->Int",
+    [],
+    Root@0..14
+      FuncTy@0..14
+        IntTy@0..3
+          Int@0..3 "Int"
+        Arrow@3..5 "->"
+        FuncTy@5..14
+          BoolTy@5..9
+            Bool@5..9 "Bool"
+          Arrow@9..11 "->"
+          IntTy@11..14
+            Int@11..14 "Int"
+    ,
+)
