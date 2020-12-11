@@ -197,7 +197,7 @@ mod tests {
     fn test() {
         use std::fs;
 
-        glob!("examples/*.l3", |path| {
+        glob!("examples/expr/*.l3", |path| {
             let input = fs::read_to_string(path).unwrap();
             let parse = parse(&input);
             let node = parse.syntax();

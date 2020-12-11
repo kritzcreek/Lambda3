@@ -1,7 +1,7 @@
 ---
 source: src/cst.rs
 expression: "(input, parse.errors, node)"
-input_file: src/examples/simple_boolean_literal_application.l3
+input_file: src/examples/expr/simple_boolean_literal_application.l3
 ---
 (
     "\\x -> true false",

@@ -1,7 +1,7 @@
 ---
 source: src/cst.rs
 expression: "(input, parse.errors, node)"
-input_file: src/examples/missing_body.l3
+input_file: src/examples/expr/missing_body.l3
 ---
 (
     "(\\x ->)",
