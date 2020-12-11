@@ -103,6 +103,10 @@ fn parse_lambda(p: &mut Parser) -> Option<ExprRes> {
         p.report_error(format!("expected binder, got {:?}", p.current()))
     }
 
+    if p.eat(Colon) {
+        types::typ(p)
+    }
+
     if !p.eat(Arrow) {
         p.finish_node();
         return Some(ExprRes::Lul(format!(
@@ -122,3 +126,4 @@ fn parse_lambda(p: &mut Parser) -> Option<ExprRes> {
 
     Some(ExprRes::Ok)
 }
+
