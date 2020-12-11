@@ -8,7 +8,7 @@ input_file: src/examples/expr/missing_binder.l3
     [
         "expected binder, got Arrow",
     ],
-    RootE@0..8
+    Root@0..8
       ParenE@0..8
         LParen@0..1 "("
         LambdaE@1..7

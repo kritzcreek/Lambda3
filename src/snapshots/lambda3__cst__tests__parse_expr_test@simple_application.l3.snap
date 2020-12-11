@@ -6,7 +6,7 @@ input_file: src/examples/expr/simple_application.l3
 (
     "x x",
     [],
-    RootE@0..3
+    Root@0..3
       ApplicationE@0..3
         VarE@0..1
           Ident@0..1 "x"

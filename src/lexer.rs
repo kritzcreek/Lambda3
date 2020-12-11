@@ -83,6 +83,12 @@ pub enum SyntaxKind {
     #[token("false")]
     FalseKw,
 
+    #[token("Bool")]
+    Bool,
+
+    #[token("Int")]
+    Int,
+
     #[regex("[A-Za-z][A-Za-z0-9]*")]
     Ident,
 
@@ -155,6 +161,11 @@ pub enum SyntaxKind {
 
     Eof,
 
+    // Types
+    IntTy,
+    BoolTy,
+    ParenTy,
+    FuncTy,
 
     // Expressions
     ParenE, // a parenthesized expression
@@ -163,7 +174,7 @@ pub enum SyntaxKind {
     LambdaE,        // a func expression
     ApplicationE, // a function application
 
-    RootE,
+    Root,
 
     // Patterns
     VarP,

@@ -1,11 +1,12 @@
 use rowan::{Checkpoint, GreenNode, GreenNodeBuilder, Language, SmolStr};
 
-use crate::cst::Root;
-use crate::lexer::SyntaxKind::{Eof, Error, RootE, Whitespace};
+use crate::cst;
+use crate::lexer::SyntaxKind::{Eof, Error, Root, Whitespace};
 use crate::lexer::{lex_str, SyntaxKind};
 use crate::syntax::{Lang, SyntaxNode};
 
 mod expr;
+mod types;
 
 /// The parse results are stored as a "green tree".
 /// We'll discuss working with the results later
@@ -32,8 +33,8 @@ impl Parse {
         SyntaxNode::new_root(self.green_node.clone())
     }
 
-    pub fn root(&self) -> Root {
-        Root::cast(self.syntax()).unwrap()
+    pub fn root(&self) -> cst::Root {
+        cst::Root::cast(self.syntax()).unwrap()
     }
 
     pub fn debug_tree(&self) -> String {
@@ -136,8 +137,31 @@ pub fn parse(text: &str) -> Parse {
     tokens.reverse();
     let mut p = Parser::new(tokens);
 
-    p.start_node(RootE);
+    p.start_node(Root);
     let _ = expr::expr(&mut p);
+    if p.current() != SyntaxKind::Eof {
+        p.start_node(Error);
+        while p.current() != Eof {
+            p.bump_any()
+        }
+        p.finish_node();
+        p.errors.push(format!("Unexpected token {:?}", p.current()))
+    }
+    p.finish_node();
+
+    Parse {
+        green_node: p.builder.finish(),
+        errors: p.errors.clone(),
+    }
+}
+
+pub fn parse_type(text: &str) -> Parse {
+    let mut tokens = lex_str(text);
+    tokens.reverse();
+    let mut p = Parser::new(tokens);
+
+    p.start_node(Root);
+    let _ = types::typ(&mut p);
     if p.current() != SyntaxKind::Eof {
         p.start_node(Error);
         while p.current() != Eof {

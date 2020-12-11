@@ -8,15 +8,16 @@ use rowan::SmolStr;
 /// but doesn't contain offsets and parent pointers.
 use rowan::{Checkpoint, GreenNode};
 
-use crate::lexer::{
-    lex_str,
-    SyntaxKind::{self, *},
-};
+use crate::lexer::{lex_str, SyntaxKind};
 use crate::parser::{self, Parse, Parser};
 use crate::syntax::{Lang, SyntaxNode, SyntaxToken};
 
 pub fn parse(text: &str) -> Parse {
     parser::parse(text)
+}
+
+pub fn parse_type(text: &str) -> Parse {
+    parser::parse_type(text)
 }
 
 macro_rules! ast_node {
@@ -27,7 +28,7 @@ macro_rules! ast_node {
         impl $ast {
             #[allow(unused)]
             pub fn cast(node: SyntaxNode) -> Option<Self> {
-                if node.kind() == $kind {
+                if node.kind() == SyntaxKind::$kind {
                     Some(Self(node))
                 } else {
                     None
@@ -45,7 +46,9 @@ macro_rules! lit_node {
         impl $ast {
             #[allow(unused)]
             fn cast(node: SyntaxNode) -> Option<Self> {
-                if node.kind() == LiteralE && first_token(&node)?.kind() == $kind {
+                if node.kind() == SyntaxKind::LiteralE
+                    && first_token(&node)?.kind() == SyntaxKind::$kind
+                {
                     Some(Self(node))
                 } else {
                     None
@@ -60,9 +63,9 @@ macro_rules! lit_node {
         impl $ast {
             #[allow(unused)]
             fn cast(node: SyntaxNode) -> Option<Self> {
-                if node.kind() == LiteralE {
+                if node.kind() == SyntaxKind::LiteralE {
                     let token = first_token(&node)?.kind();
-                    if token == $kind1 || token == $kind2 {
+                    if token == SyntaxKind::$kind1 || token == SyntaxKind::$kind2 {
                         Some(Self(node))
                     } else {
                         None
@@ -75,7 +78,7 @@ macro_rules! lit_node {
     };
 }
 
-ast_node!(Root, RootE);
+ast_node!(Root, Root);
 ast_node!(Var, VarE);
 ast_node!(Lambda, LambdaE);
 ast_node!(Application, ApplicationE);
@@ -128,7 +131,7 @@ impl Root {
 
 pub fn first_token(node: &SyntaxNode) -> Option<SyntaxToken> {
     node.children_with_tokens().find_map(|node| {
-        if node.kind() != Whitespace {
+        if node.kind() != SyntaxKind::Whitespace {
             node.as_token().cloned()
         } else {
             None
@@ -138,7 +141,7 @@ pub fn first_token(node: &SyntaxNode) -> Option<SyntaxToken> {
 
 pub fn first_word(node: &SyntaxNode) -> Option<String> {
     node.children_with_tokens().find_map(|node| {
-        if node.kind() == Ident {
+        if node.kind() == SyntaxKind::Ident {
             Some(node.as_token().unwrap().text().to_string())
         } else {
             None
@@ -150,7 +153,7 @@ impl Lambda {
     pub fn binder(&self) -> Option<String> {
         self.0
             .children()
-            .find(|node| node.kind() == VarP)
+            .find(|node| node.kind() == SyntaxKind::VarP)
             .and_then(|node| first_word(&node))
     }
 
@@ -173,7 +176,7 @@ impl IntLit {
 
 impl BooleanLit {
     pub fn value(&self) -> bool {
-        first_token(&self.0).unwrap().kind() == TrueKw
+        first_token(&self.0).unwrap().kind() == SyntaxKind::TrueKw
     }
 }
 
@@ -194,12 +197,25 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test() {
+    fn parse_expr_test() {
         use std::fs;
 
         glob!("examples/expr/*.l3", |path| {
             let input = fs::read_to_string(path).unwrap();
             let parse = parse(&input);
+            let node = parse.syntax();
+
+            assert_debug_snapshot!((input, parse.errors, node));
+        });
+    }
+
+    #[test]
+    fn parse_type_test() {
+        use std::fs;
+
+        glob!("examples/types/*.l3", |path| {
+            let input = fs::read_to_string(path).unwrap();
+            let parse = parse_type(&input);
             let node = parse.syntax();
 
             assert_debug_snapshot!((input, parse.errors, node));
