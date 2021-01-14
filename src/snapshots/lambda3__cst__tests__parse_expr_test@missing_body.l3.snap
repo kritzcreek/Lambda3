@@ -4,20 +4,19 @@ expression: "(input, parse.errors, node)"
 input_file: src/examples/expr/missing_body.l3
 ---
 (
-    "(\\x ->)",
+    "(\\x.)",
     [
         "Expected expression",
     ],
-    Root@0..7
-      ParenE@0..7
+    Root@0..5
+      ParenE@0..5
         LParen@0..1 "("
-        LambdaE@1..6
+        LambdaE@1..4
           Backslash@1..2 "\\"
           VarP@2..3
             Ident@2..3 "x"
-          Whitespace@3..4 " "
-          Arrow@4..6 "->"
-          Error@6..6
-        RParen@6..7 ")"
+          Dot@3..4 "."
+          Error@4..4
+        RParen@4..5 ")"
     ,
 )

@@ -107,10 +107,10 @@ fn parse_lambda(p: &mut Parser) -> Option<ExprRes> {
         types::typ(p)
     }
 
-    if !p.eat(Arrow) {
+    if !p.eat(Dot) {
         p.finish_node();
         return Some(ExprRes::Lul(format!(
-            "expected '->', got {:?}",
+            "expected '.', got {:?}",
             p.current()
         )));
     }

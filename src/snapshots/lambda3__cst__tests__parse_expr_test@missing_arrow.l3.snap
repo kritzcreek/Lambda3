@@ -4,13 +4,13 @@ expression: "(input, parse.errors, node)"
 input_file: src/examples/expr/missing_arrow.l3
 ---
 (
-    "(\\x  x x) (\\y -> y)",
+    "(\\x  x x) (\\y. y)",
     [
-        "expected \'->\', got Ident",
+        "expected \'.\', got Ident",
         "unexpected token Ident, expected \')\'",
     ],
-    Root@0..19
-      ApplicationE@0..19
+    Root@0..17
+      ApplicationE@0..17
         ParenE@0..9
           LParen@0..1 "("
           LambdaE@1..3
@@ -24,18 +24,17 @@ input_file: src/examples/expr/missing_arrow.l3
             Whitespace@6..7 " "
             Ident@7..8 "x"
           RParen@8..9 ")"
-        ParenE@9..19
+        ParenE@9..17
           Whitespace@9..10 " "
           LParen@10..11 "("
-          LambdaE@11..18
+          LambdaE@11..16
             Backslash@11..12 "\\"
             VarP@12..13
               Ident@12..13 "y"
-            Whitespace@13..14 " "
-            Arrow@14..16 "->"
-            VarE@16..18
-              Whitespace@16..17 " "
-              Ident@17..18 "y"
-          RParen@18..19 ")"
+            Dot@13..14 "."
+            VarE@14..16
+              Whitespace@14..15 " "
+              Ident@15..16 "y"
+          RParen@16..17 ")"
     ,
 )
