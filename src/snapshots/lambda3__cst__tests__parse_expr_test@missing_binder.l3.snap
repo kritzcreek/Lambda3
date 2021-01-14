@@ -6,7 +6,7 @@ input_file: src/examples/expr/missing_binder.l3
 (
     "(\\. x)",
     [
-        "expected binder, got Dot",
+        "expected pattern, got Dot",
     ],
     Root@0..6
       ParenE@0..6

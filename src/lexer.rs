@@ -155,6 +155,9 @@ pub enum SyntaxKind {
     #[token("->")]
     Arrow,
 
+    #[token("_")]
+    Underscore,
+
     #[error]
     LexerError,
     Error,
@@ -162,9 +165,9 @@ pub enum SyntaxKind {
     Eof,
 
     // Types
+    ParenTy,
     IntTy,
     BoolTy,
-    ParenTy,
     FuncTy,
 
     // Expressions
@@ -177,5 +180,8 @@ pub enum SyntaxKind {
     Root,
 
     // Patterns
+    ParenP,
     VarP,
+    WildcardP,
+    AnnotationP,
 }

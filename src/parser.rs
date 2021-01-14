@@ -5,8 +5,9 @@ use crate::lexer::SyntaxKind::{Eof, Error, Root, Whitespace};
 use crate::lexer::{lex_str, SyntaxKind};
 use crate::syntax::{Lang, SyntaxNode};
 
-mod expr;
+mod expressions;
 mod types;
+mod patterns;
 
 /// The parse results are stored as a "green tree".
 /// We'll discuss working with the results later
@@ -138,7 +139,7 @@ pub fn parse(text: &str) -> Parse {
     let mut p = Parser::new(tokens);
 
     p.start_node(Root);
-    let _ = expr::expr(&mut p);
+    let _ = expressions::expr(&mut p);
     if p.current() != SyntaxKind::Eof {
         p.start_node(Error);
         while p.current() != Eof {
@@ -162,6 +163,29 @@ pub fn parse_type(text: &str) -> Parse {
 
     p.start_node(Root);
     let _ = types::typ(&mut p);
+    if p.current() != SyntaxKind::Eof {
+        p.start_node(Error);
+        while p.current() != Eof {
+            p.bump_any()
+        }
+        p.finish_node();
+        p.errors.push(format!("Unexpected token {:?}", p.current()))
+    }
+    p.finish_node();
+
+    Parse {
+        green_node: p.builder.finish(),
+        errors: p.errors.clone(),
+    }
+}
+
+pub fn parse_pattern(text: &str) -> Parse {
+    let mut tokens = lex_str(text);
+    tokens.reverse();
+    let mut p = Parser::new(tokens);
+
+    p.start_node(Root);
+    let _ = patterns::parse_pattern(&mut p);
     if p.current() != SyntaxKind::Eof {
         p.start_node(Error);
         while p.current() != Eof {

@@ -95,17 +95,7 @@ fn parse_lambda(p: &mut Parser) -> Option<ExprRes> {
     p.start_node(LambdaE);
     p.bump(Backslash);
 
-    let checkpoint = p.checkpoint();
-    if p.eat(Ident) {
-        p.start_node_at(checkpoint, VarP);
-        p.finish_node();
-    } else {
-        p.report_error(format!("expected binder, got {:?}", p.current()))
-    }
-
-    if p.eat(Colon) {
-        types::typ(p)
-    }
+    patterns::parse_pattern(p);
 
     if !p.eat(Dot) {
         p.finish_node();

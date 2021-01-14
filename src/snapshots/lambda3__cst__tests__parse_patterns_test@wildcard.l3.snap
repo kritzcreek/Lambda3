@@ -1,0 +1,13 @@
+---
+source: src/cst.rs
+expression: "(input, parse.errors, node)"
+input_file: src/examples/patterns/wildcard.l3
+---
+(
+    "_",
+    [],
+    Root@0..1
+      WildcardP@0..1
+        Underscore@0..1 "_"
+    ,
+)
