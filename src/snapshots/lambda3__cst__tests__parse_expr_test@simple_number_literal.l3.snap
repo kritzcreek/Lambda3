@@ -4,17 +4,16 @@ expression: "(input, parse.errors, node)"
 input_file: src/examples/expr/simple_number_literal.l3
 ---
 (
-    "\\x -> 42",
+    "\\x. 42",
     [],
-    Root@0..8
-      LambdaE@0..8
+    Root@0..6
+      LambdaE@0..6
         Backslash@0..1 "\\"
         VarP@1..2
           Ident@1..2 "x"
-        Whitespace@2..3 " "
-        Arrow@3..5 "->"
-        LiteralE@5..8
-          Whitespace@5..6 " "
-          NumberLit@6..8 "42"
+        Dot@2..3 "."
+        LiteralE@3..6
+          Whitespace@3..4 " "
+          NumberLit@4..6 "42"
     ,
 )

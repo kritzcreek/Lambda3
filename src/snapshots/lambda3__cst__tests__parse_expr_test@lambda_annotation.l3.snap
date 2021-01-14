@@ -1,0 +1,38 @@
+---
+source: src/cst.rs
+expression: "(input, parse.errors, node)"
+input_file: src/examples/expr/lambda_annotation.l3
+---
+(
+    "\\f : (Int -> Int). f 1",
+    [],
+    Root@0..22
+      LambdaE@0..22
+        Backslash@0..1 "\\"
+        AnnotationP@1..17
+          VarP@1..2
+            Ident@1..2 "f"
+          Whitespace@2..3 " "
+          Colon@3..4 ":"
+          ParenTy@4..17
+            Whitespace@4..5 " "
+            LParen@5..6 "("
+            FuncTy@6..16
+              IntTy@6..9
+                Int@6..9 "Int"
+              Whitespace@9..10 " "
+              Arrow@10..12 "->"
+              IntTy@12..16
+                Whitespace@12..13 " "
+                Int@13..16 "Int"
+            RParen@16..17 ")"
+        Dot@17..18 "."
+        ApplicationE@18..22
+          VarE@18..20
+            Whitespace@18..19 " "
+            Ident@19..20 "f"
+          LiteralE@20..22
+            Whitespace@20..21 " "
+            NumberLit@21..22 "1"
+    ,
+)

@@ -4,20 +4,19 @@ expression: "(input, parse.errors, node)"
 input_file: src/examples/expr/simple.l3
 ---
 (
-    "(\\x -> x)",
+    "(\\x. x)",
     [],
-    Root@0..9
-      ParenE@0..9
+    Root@0..7
+      ParenE@0..7
         LParen@0..1 "("
-        LambdaE@1..8
+        LambdaE@1..6
           Backslash@1..2 "\\"
           VarP@2..3
             Ident@2..3 "x"
-          Whitespace@3..4 " "
-          Arrow@4..6 "->"
-          VarE@6..8
-            Whitespace@6..7 " "
-            Ident@7..8 "x"
-        RParen@8..9 ")"
+          Dot@3..4 "."
+          VarE@4..6
+            Whitespace@4..5 " "
+            Ident@5..6 "x"
+        RParen@6..7 ")"
     ,
 )

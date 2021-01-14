@@ -4,21 +4,20 @@ expression: "(input, parse.errors, node)"
 input_file: src/examples/expr/missing_binder.l3
 ---
 (
-    "(\\ -> x)",
+    "(\\. x)",
     [
-        "expected binder, got Arrow",
+        "expected pattern, got Dot",
     ],
-    Root@0..8
-      ParenE@0..8
+    Root@0..6
+      ParenE@0..6
         LParen@0..1 "("
-        LambdaE@1..7
+        LambdaE@1..5
           Backslash@1..2 "\\"
           Error@2..2
-          Whitespace@2..3 " "
-          Arrow@3..5 "->"
-          VarE@5..7
-            Whitespace@5..6 " "
-            Ident@6..7 "x"
-        RParen@7..8 ")"
+          Dot@2..3 "."
+          VarE@3..5
+            Whitespace@3..4 " "
+            Ident@4..5 "x"
+        RParen@5..6 ")"
     ,
 )

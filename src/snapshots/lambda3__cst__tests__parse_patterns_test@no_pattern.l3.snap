@@ -1,0 +1,17 @@
+---
+source: src/cst.rs
+expression: "(input, parse.errors, node)"
+input_file: src/examples/patterns/no_pattern.l3
+---
+(
+    "\\",
+    [
+        "expected pattern, got Backslash",
+        "Unexpected token Eof",
+    ],
+    Root@0..1
+      Error@0..0
+      Error@0..1
+        Backslash@0..1 "\\"
+    ,
+)

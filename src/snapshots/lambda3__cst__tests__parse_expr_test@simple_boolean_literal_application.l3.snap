@@ -4,21 +4,20 @@ expression: "(input, parse.errors, node)"
 input_file: src/examples/expr/simple_boolean_literal_application.l3
 ---
 (
-    "\\x -> true false",
+    "\\x. true false",
     [],
-    Root@0..16
-      LambdaE@0..16
+    Root@0..14
+      LambdaE@0..14
         Backslash@0..1 "\\"
         VarP@1..2
           Ident@1..2 "x"
-        Whitespace@2..3 " "
-        Arrow@3..5 "->"
-        ApplicationE@5..16
-          LiteralE@5..10
-            Whitespace@5..6 " "
-            TrueKw@6..10 "true"
-          LiteralE@10..16
-            Whitespace@10..11 " "
-            FalseKw@11..16 "false"
+        Dot@2..3 "."
+        ApplicationE@3..14
+          LiteralE@3..8
+            Whitespace@3..4 " "
+            TrueKw@4..8 "true"
+          LiteralE@8..14
+            Whitespace@8..9 " "
+            FalseKw@9..14 "false"
     ,
 )
