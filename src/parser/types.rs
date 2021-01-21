@@ -34,7 +34,7 @@ fn atom(p: &mut Parser) -> bool {
             }
             p.finish_node()
         }
-        _ => return false
+        _ => return false,
     }
     true
 }
