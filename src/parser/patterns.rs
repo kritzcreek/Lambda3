@@ -1,5 +1,5 @@
-use crate::lexer::SyntaxKind::*;
 use super::*;
+use crate::lexer::SyntaxKind::*;
 
 pub fn parse_pattern(p: &mut Parser) {
     let checkpoint = p.checkpoint();

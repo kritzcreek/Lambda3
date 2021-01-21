@@ -7,9 +7,9 @@ pub fn lex_str<'a>(input: &'a str) -> Vec<Item> {
     let mut lexer = Lexer::new(input);
 
     while let Some(item) = lexer.next() {
-        if item.1.0 == SyntaxKind::Eof {
+        if (item.1).0 == SyntaxKind::Eof {
             tokens.push(item);
-            return tokens
+            return tokens;
         } else {
             tokens.push(item);
         }
@@ -35,16 +35,10 @@ fn is_whitespace(kind: SyntaxKind) -> bool {
     kind == SyntaxKind::Whitespace
 }
 
-pub type Item = (
-    Vec<(SyntaxKind, SmolStr)>,
-    (SyntaxKind, SmolStr),
-);
+pub type Item = (Vec<(SyntaxKind, SmolStr)>, (SyntaxKind, SmolStr));
 
 impl<'a> Iterator for Lexer<'a> {
-    type Item = (
-        Vec<(SyntaxKind, SmolStr)>,
-        (SyntaxKind, SmolStr),
-    );
+    type Item = (Vec<(SyntaxKind, SmolStr)>, (SyntaxKind, SmolStr));
 
     fn next(&mut self) -> Option<Self::Item> {
         let mut leading = vec![];
@@ -57,9 +51,8 @@ impl<'a> Iterator for Lexer<'a> {
                 None => return Some((leading, (SyntaxKind::Eof, "".into()))),
                 Some(kind) => {
                     if !is_whitespace(kind) {
-                        return Some((leading, (kind, text.into())))
-                    }
-                    else {
+                        return Some((leading, (kind, text.into())));
+                    } else {
                         leading.push((kind, text.into()));
                     }
                 }
@@ -171,10 +164,10 @@ pub enum SyntaxKind {
     FuncTy,
 
     // Expressions
-    ParenE, // a parenthesized expression
+    ParenE,       // a parenthesized expression
     LiteralE,     // a literal
     VarE,         // wraps a WORD token
-    LambdaE,        // a func expression
+    LambdaE,      // a func expression
     ApplicationE, // a function application
 
     Root,

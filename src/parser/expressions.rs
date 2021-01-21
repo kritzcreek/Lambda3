@@ -63,10 +63,8 @@ fn parse_parenthesized(p: &mut Parser) {
 
     if !p.eat(RParen) {
         p.start_node(Error);
-        p.errors.push(format!(
-            "unexpected token {:?}, expected ')'",
-            p.current()
-        ));
+        p.errors
+            .push(format!("unexpected token {:?}, expected ')'", p.current()));
 
         while p.current() != RParen && p.current() != Eof {
             p.bump_any()
@@ -99,10 +97,7 @@ fn parse_lambda(p: &mut Parser) -> Option<ExprRes> {
 
     if !p.eat(Dot) {
         p.finish_node();
-        return Some(ExprRes::Lul(format!(
-            "expected '.', got {:?}",
-            p.current()
-        )));
+        return Some(ExprRes::Lul(format!("expected '.', got {:?}", p.current())));
     }
 
     match expr(p) {
@@ -116,4 +111,3 @@ fn parse_lambda(p: &mut Parser) -> Option<ExprRes> {
 
     Some(ExprRes::Ok)
 }
-

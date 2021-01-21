@@ -6,8 +6,8 @@ use crate::lexer::{lex_str, SyntaxKind};
 use crate::syntax::{Lang, SyntaxNode};
 
 mod expressions;
-mod types;
 mod patterns;
+mod types;
 
 /// The parse results are stored as a "green tree".
 /// We'll discuss working with the results later
