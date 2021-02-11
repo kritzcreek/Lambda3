@@ -9,7 +9,7 @@ fn main() {
     let expr = cst::parse("\\x -> x x").root().expr().unwrap();
     let expr = cst::parse("\\x -> x 42").root().expr().unwrap();
     let expr = cst::parse("\\x -> false true").root().expr().unwrap();
-    let _ = dbg!(ast::Expr::from_cst(dbg!(expr)));
+    //let _ = dbg!(ast::Expr::from_cst(dbg!(expr)));
 
     //     match expr.kind() {
     //         ExprKind::Var(var) => {}
