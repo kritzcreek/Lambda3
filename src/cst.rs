@@ -102,6 +102,64 @@ pub enum ExprKind {
     BooleanLit(BooleanLit),
 }
 
+ast_node!(VarP, VarP);
+ast_node!(ParenP, ParenP);
+ast_node!(WildcardP, WildcardP);
+ast_node!(AnnotationP, AnnotationP);
+
+#[derive(PartialEq, Eq, Hash, Debug)]
+#[repr(transparent)]
+pub struct Pattern(SyntaxNode);
+
+#[derive(Debug)]
+pub enum PatternKind {
+    VarP(VarP),
+    ParenP(ParenP),
+    WildcardP(WildcardP),
+    AnnotationP(AnnotationP),
+}
+
+ast_node!(ParenTy, ParenTy);
+ast_node!(IntTy, IntTy);
+ast_node!(BoolTy, BoolTy);
+ast_node!(FuncTy, FuncTy);
+
+#[derive(PartialEq, Eq, Hash, Debug)]
+#[repr(transparent)]
+pub struct Type(SyntaxNode);
+
+#[derive(Debug)]
+pub enum TypeKind {
+    ParenTy(ParenTy),
+    IntTy(IntTy),
+    BoolTy(BoolTy),
+    FuncTy(FuncTy),
+}
+
+
+impl Type {
+    fn cast(node: SyntaxNode) -> Option<Self> {
+        if ParenTy::cast(node.clone()).is_some()
+            || IntTy::cast(node.clone()).is_some()
+            || BoolTy::cast(node.clone()).is_some()
+            || FuncTy::cast(node.clone()).is_some()
+        {
+            Some(Type(node))
+        } else {
+            None
+        }
+    }
+
+    pub fn kind(&self) -> TypeKind {
+        ParenTy::cast(self.0.clone())
+            .map(TypeKind::ParenTy)
+            .or_else(|| IntTy::cast(self.0.clone()).map(TypeKind::IntTy))
+            .or_else(|| BoolTy::cast(self.0.clone()).map(TypeKind::BoolTy))
+            .or_else(|| FuncTy::cast(self.0.clone()).map(TypeKind::FuncTy))
+            .unwrap()
+    }
+}
+
 impl Expr {
     fn cast(node: SyntaxNode) -> Option<Self> {
         if Var::cast(node.clone()).is_some()
@@ -124,6 +182,56 @@ impl Expr {
             .or_else(|| IntLit::cast(self.0.clone()).map(ExprKind::IntLit))
             .or_else(|| BooleanLit::cast(self.0.clone()).map(ExprKind::BooleanLit))
             .unwrap()
+    }
+}
+
+impl Pattern {
+    fn cast(node: SyntaxNode) -> Option<Self> {
+        if VarP::cast(node.clone()).is_some()
+            || ParenP::cast(node.clone()).is_some()
+            || WildcardP::cast(node.clone()).is_some()
+            || AnnotationP::cast(node.clone()).is_some()
+        {
+            Some(Pattern(node))
+        } else {
+            None
+        }
+    }
+
+    pub fn kind(&self) -> PatternKind {
+        VarP::cast(self.0.clone())
+            .map(PatternKind::VarP)
+            .or_else(|| ParenP::cast(self.0.clone()).map(PatternKind::ParenP))
+            .or_else(|| WildcardP::cast(self.0.clone()).map(PatternKind::WildcardP))
+            .or_else(|| AnnotationP::cast(self.0.clone()).map(PatternKind::AnnotationP))
+            .unwrap()
+    }
+}
+
+impl ParenP {
+    pub fn pattern(&self) -> Pattern {
+        self.0.children().find_map(Pattern::cast).unwrap()
+    }
+}
+impl AnnotationP {
+    pub fn pattern(&self) -> Pattern {
+        self.0.children().find_map(Pattern::cast).unwrap()
+    }
+
+    pub fn ty(&self) -> Type {
+        self.0.children().find_map(Type::cast).unwrap()
+    }
+}
+
+impl IntLit {
+    pub fn int(&self) -> i32 {
+        self.0.text().to_string().parse().unwrap()
+    }
+}
+
+impl BooleanLit {
+    pub fn bool(&self) -> bool {
+        self.0.text().to_string().parse().unwrap()
     }
 }
 
@@ -154,11 +262,10 @@ pub fn first_word(node: &SyntaxNode) -> Option<String> {
 }
 
 impl Lambda {
-    pub fn binder(&self) -> Option<String> {
+    pub fn binder(&self) -> Option<AnnotationP> {
         self.0
             .children()
-            .find(|node| node.kind() == SyntaxKind::VarP)
-            .and_then(|node| first_word(&node))
+            .find_map(AnnotationP::cast)
     }
 
     pub fn body(&self) -> Option<Expr> {

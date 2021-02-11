@@ -25,10 +25,6 @@ pub enum Ty {
         range: TextRange,
         ident: String,
     },
-    Unknown {
-        range: TextRange,
-        unknown: u32,
-    },
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -85,12 +81,9 @@ pub enum Lit {
 
 fn var(range: TextRange, ident: String) -> Expr {
     Expr::Var {
-        ty: Rc::new(Ty::Unknown {
-            range,
-            unknown: 0,
-        }),
+        ty: Rc::new(Ty::Int { range }),
         range,
-        ident
+        ident,
     }
 }
 
@@ -113,4 +106,15 @@ impl Expr {
     //         ExprKind::BooleanLit(bool) => Some(Expr::BoolLit(bool.value())),
     //     }
     // }
+
+    pub fn ty(&self) -> Rc<Ty> {
+        match self {
+            Expr::Var { ty, .. } => ty.clone(),
+            Expr::Lambda  { ty, .. } => ty.clone(),
+            Expr::App  { ty, .. } => ty.clone(),
+            Expr::Lit  { ty, .. } => ty.clone(),
+            Expr::TyApp  { ty, .. } => ty.clone(),
+            Expr::TyLambda  { ty, .. } => ty.clone(),
+        }
+    }
 }
