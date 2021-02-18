@@ -66,7 +66,7 @@ fn parse_parenthesized(p: &mut Parser) {
         p.errors
             .push(format!("unexpected token {:?}, expected ')'", p.current()));
 
-        while p.current() != RParen && p.current() != Eof {
+        while !(p.at(RParen) || p.at(Eof)) {
             p.bump_any()
         }
 

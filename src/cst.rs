@@ -1,16 +1,6 @@
-use num_traits::{FromPrimitive, ToPrimitive};
-/// You can construct GreenNodes by hand, but a builder
-/// is helpful for top-down parsers: it maintains a stack
-/// of currently in-progress nodes
-use rowan::GreenNodeBuilder;
-use rowan::SmolStr;
-/// GreenNode is an immutable tree, which is cheap to change,
-/// but doesn't contain offsets and parent pointers.
-use rowan::{Checkpoint, GreenNode};
-
-use crate::lexer::{lex_str, SyntaxKind};
-use crate::parser::{self, Parse, Parser};
-use crate::syntax::{Lang, SyntaxNode, SyntaxToken};
+use crate::lexer::SyntaxKind;
+use crate::parser::{self, Parse};
+use crate::syntax::{SyntaxNode, SyntaxToken};
 
 pub fn parse(text: &str) -> Parse {
     parser::parse(text)
@@ -135,7 +125,6 @@ pub enum TypeKind {
     BoolTy(BoolTy),
     FuncTy(FuncTy),
 }
-
 
 impl Type {
     fn cast(node: SyntaxNode) -> Option<Self> {
@@ -263,9 +252,7 @@ pub fn first_word(node: &SyntaxNode) -> Option<String> {
 
 impl Lambda {
     pub fn binder(&self) -> Option<AnnotationP> {
-        self.0
-            .children()
-            .find_map(AnnotationP::cast)
+        self.0.children().find_map(AnnotationP::cast)
     }
 
     pub fn body(&self) -> Option<Expr> {
@@ -293,7 +280,7 @@ impl BooleanLit {
 
 impl Application {
     pub fn func(&self) -> Expr {
-        self.0.children().filter_map(Expr::cast).nth(0).unwrap()
+        self.0.children().filter_map(Expr::cast).next().unwrap()
     }
 
     pub fn arg(&self) -> Expr {
