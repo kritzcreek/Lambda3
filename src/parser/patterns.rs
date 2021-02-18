@@ -38,5 +38,5 @@ fn opt_annotation(p: &mut Parser, checkpoint: Checkpoint) -> bool {
         return true;
     }
 
-    return false;
+    false
 }

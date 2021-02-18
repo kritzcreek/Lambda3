@@ -1,8 +1,8 @@
-use rowan::{Checkpoint, GreenNode, GreenNodeBuilder, Language, SmolStr};
+use rowan::{Checkpoint, GreenNode, GreenNodeBuilder, Language};
 
 use crate::cst;
-use crate::lexer::SyntaxKind::{Eof, Error, Root, Whitespace};
-use crate::lexer::{lex_str, SyntaxKind};
+use crate::lexer::SyntaxKind::{Eof, Error, Root};
+use crate::lexer::{lex_str, SyntaxKind, Token};
 use crate::syntax::{Lang, SyntaxNode};
 
 mod expressions;
@@ -21,7 +21,7 @@ pub struct Parse {
 pub struct Parser {
     /// input tokens, including whitespace,
     /// in *reverse* order.
-    tokens: Vec<(Vec<(SyntaxKind, SmolStr)>, (SyntaxKind, SmolStr))>,
+    tokens: Vec<(Vec<Token>, Token)>,
     /// the in-progress tree.
     builder: GreenNodeBuilder<'static>,
     /// the list of syntax errors we've accumulated
@@ -48,7 +48,7 @@ impl Parse {
 }
 
 impl Parser {
-    fn new(tokens: Vec<(Vec<(SyntaxKind, SmolStr)>, (SyntaxKind, SmolStr))>) -> Self {
+    fn new(tokens: Vec<(Vec<Token>, Token)>) -> Self {
         Parser {
             tokens,
             builder: GreenNodeBuilder::new(),
@@ -98,16 +98,12 @@ impl Parser {
         self.nth(0)
     }
 
-    fn nth_at(&self, n: usize, kind: SyntaxKind) -> bool {
-        self.nth(n) == kind
-    }
-
     fn at(&self, kind: SyntaxKind) -> bool {
         self.current() == kind
     }
 
     fn eat(&mut self, kind: SyntaxKind) -> bool {
-        if self.current() != kind {
+        if !self.at(kind) {
             return false;
         }
         self.bump_any();
@@ -116,7 +112,7 @@ impl Parser {
 
     /// Advance one token, adding it to the current branch of the tree builder.
     fn bump_any(&mut self) {
-        if self.current() == Eof {
+        if self.at(Eof) {
             return;
         }
         let (leading, (kind, text)) = self.tokens.pop().unwrap();
@@ -140,9 +136,9 @@ pub fn parse(text: &str) -> Parse {
 
     p.start_node(Root);
     let _ = expressions::expr(&mut p);
-    if p.current() != SyntaxKind::Eof {
+    if !p.at(SyntaxKind::Eof) {
         p.start_node(Error);
-        while p.current() != Eof {
+        while !p.at(Eof) {
             p.bump_any()
         }
         p.finish_node();
@@ -152,7 +148,7 @@ pub fn parse(text: &str) -> Parse {
 
     Parse {
         green_node: p.builder.finish(),
-        errors: p.errors.clone(),
+        errors: p.errors,
     }
 }
 
@@ -163,9 +159,9 @@ pub fn parse_type(text: &str) -> Parse {
 
     p.start_node(Root);
     let _ = types::typ(&mut p);
-    if p.current() != SyntaxKind::Eof {
+    if !p.at(SyntaxKind::Eof) {
         p.start_node(Error);
-        while p.current() != Eof {
+        while !p.at(Eof) {
             p.bump_any()
         }
         p.finish_node();
@@ -175,7 +171,7 @@ pub fn parse_type(text: &str) -> Parse {
 
     Parse {
         green_node: p.builder.finish(),
-        errors: p.errors.clone(),
+        errors: p.errors,
     }
 }
 
@@ -186,9 +182,9 @@ pub fn parse_pattern(text: &str) -> Parse {
 
     p.start_node(Root);
     let _ = patterns::parse_pattern(&mut p);
-    if p.current() != SyntaxKind::Eof {
+    if !p.at(SyntaxKind::Eof) {
         p.start_node(Error);
-        while p.current() != Eof {
+        while !p.at(Eof) {
             p.bump_any()
         }
         p.finish_node();
@@ -198,6 +194,6 @@ pub fn parse_pattern(text: &str) -> Parse {
 
     Parse {
         green_node: p.builder.finish(),
-        errors: p.errors.clone(),
+        errors: p.errors,
     }
 }

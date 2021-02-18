@@ -1,5 +1,3 @@
-use crate::cst;
-use crate::cst::ExprKind;
 use rowan::TextRange;
 use std::rc::Rc;
 
@@ -79,7 +77,7 @@ pub enum Lit {
     Bool(bool),
 }
 
-fn var(range: TextRange, ident: String) -> Expr {
+pub fn var(range: TextRange, ident: String) -> Expr {
     Expr::Var {
         ty: Rc::new(Ty::Int { range }),
         range,
@@ -88,33 +86,14 @@ fn var(range: TextRange, ident: String) -> Expr {
 }
 
 impl Expr {
-    // pub fn from_cst(cst: cst::Expr) -> Option<Self> {
-    //     match cst.kind() {
-    //         ExprKind::Var(v) => Some(var(v.0.text_range(), v.name())),
-    //         ExprKind::Lambda(lambda) => {
-    //             let binder = lambda.binder()?;
-    //             let body = lambda.body()?;
-    //             let body = Self::from_cst(body)?;
-    //             Some(Expr::Lambda(binder, Rc::new(body)))
-    //         }
-    //         ExprKind::Application(app) => {
-    //             let func = Self::from_cst(app.func())?;
-    //             let arg = Self::from_cst(app.arg())?;
-    //             Some(Expr::App(Rc::new(func), Rc::new(arg)))
-    //         }
-    //         ExprKind::IntLit(int) => Some(Expr::IntLit(int.value())),
-    //         ExprKind::BooleanLit(bool) => Some(Expr::BoolLit(bool.value())),
-    //     }
-    // }
-
     pub fn ty(&self) -> Rc<Ty> {
         match self {
             Expr::Var { ty, .. } => ty.clone(),
-            Expr::Lambda  { ty, .. } => ty.clone(),
-            Expr::App  { ty, .. } => ty.clone(),
-            Expr::Lit  { ty, .. } => ty.clone(),
-            Expr::TyApp  { ty, .. } => ty.clone(),
-            Expr::TyLambda  { ty, .. } => ty.clone(),
+            Expr::Lambda { ty, .. } => ty.clone(),
+            Expr::App { ty, .. } => ty.clone(),
+            Expr::Lit { ty, .. } => ty.clone(),
+            Expr::TyApp { ty, .. } => ty.clone(),
+            Expr::TyLambda { ty, .. } => ty.clone(),
         }
     }
 }

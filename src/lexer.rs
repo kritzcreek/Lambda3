@@ -2,11 +2,11 @@ use logos::Logos;
 use num_derive::{FromPrimitive, ToPrimitive};
 use rowan::SmolStr;
 
-pub fn lex_str<'a>(input: &'a str) -> Vec<Item> {
+pub fn lex_str(input: &str) -> Vec<Item> {
     let mut tokens = vec![];
-    let mut lexer = Lexer::new(input);
+    let lexer = Lexer::new(input);
 
-    while let Some(item) = lexer.next() {
+    for item in lexer {
         if (item.1).0 == SyntaxKind::Eof {
             tokens.push(item);
             return tokens;
@@ -19,14 +19,12 @@ pub fn lex_str<'a>(input: &'a str) -> Vec<Item> {
 
 pub struct Lexer<'a> {
     inner: logos::Lexer<'a, SyntaxKind>,
-    lookahead: Option<(SyntaxKind, &'a str)>,
 }
 
 impl<'a> Lexer<'a> {
     pub fn new(input: &'a str) -> Self {
         Self {
             inner: SyntaxKind::lexer(input),
-            lookahead: None,
         }
     }
 }
@@ -35,10 +33,11 @@ fn is_whitespace(kind: SyntaxKind) -> bool {
     kind == SyntaxKind::Whitespace
 }
 
-pub type Item = (Vec<(SyntaxKind, SmolStr)>, (SyntaxKind, SmolStr));
+pub type Token = (SyntaxKind, SmolStr);
+pub type Item = (Vec<Token>, Token);
 
 impl<'a> Iterator for Lexer<'a> {
-    type Item = (Vec<(SyntaxKind, SmolStr)>, (SyntaxKind, SmolStr));
+    type Item = (Vec<Token>, Token);
 
     fn next(&mut self) -> Option<Self::Item> {
         let mut leading = vec![];

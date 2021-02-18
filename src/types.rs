@@ -1,12 +1,9 @@
 use crate::ast;
-use crate::ast::Ty;
-use crate::cst;
-use crate::cst::{Expr, ExprKind};
+use crate::cst::{self, ExprKind};
 use crate::types::TypeErr::{TypeMismatch, UnknownVar};
 use rowan::TextRange;
 use std::collections::HashMap;
 use std::rc::Rc;
-use std::borrow::Borrow;
 
 pub enum TypeErr {
     UnknownVar { var: String, span: TextRange },
@@ -36,9 +33,9 @@ fn infer(env: Env, expr: cst::Expr) -> Result<ast::Expr, TypeErr> {
             }
         }
         ExprKind::Lambda(lambda) => {
-            let range = lambda.0.text_range();
-            let binder = lambda.binder()?;
-            let body = lambda.body()?;
+            let _range = lambda.0.text_range();
+            //let binder = lambda.binder()?;
+            //let body = lambda.body()?;
             //ast::Expr::Lambda { range, ty: , body: , binder: }
 
             unreachable!()
@@ -66,7 +63,8 @@ fn infer(env: Env, expr: cst::Expr) -> Result<ast::Expr, TypeErr> {
 fn check(env: Env, expr: cst::Expr, ty: ast::Ty) -> Result<ast::Expr, TypeErr> {
     let expr = infer(env, expr)?;
     let actual_ty = expr.ty();
-    if actual_ty.as_ref() == &ty { //TODO: type equivalence
+    if actual_ty.as_ref() == &ty {
+        //TODO: type equivalence
         Ok(expr)
     } else {
         Err(TypeMismatch {

@@ -1,3 +1,4 @@
+#![allow(dead_code, unused_imports, unused_variables)]
 use lambda3::ast;
 use lambda3::cst::{self, Expr, ExprKind};
 
