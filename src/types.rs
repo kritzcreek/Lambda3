@@ -1,8 +1,10 @@
 use crate::ast;
-use crate::cst::{self, ExprKind};
+use crate::ast::Ty::Func;
+use crate::cst::{self, ExprKind, TypeKind};
 use crate::types::TypeErr::{TypeMismatch, UnknownVar};
 use rowan::TextRange;
 use std::collections::HashMap;
+use std::hint::unreachable_unchecked;
 use std::rc::Rc;
 
 pub enum TypeErr {
@@ -33,10 +35,10 @@ fn infer(env: Env, expr: cst::Expr) -> Result<ast::Expr, TypeErr> {
             }
         }
         ExprKind::Lambda(lambda) => {
-            let _range = lambda.0.text_range();
-            //let binder = lambda.binder()?;
-            //let body = lambda.body()?;
-            //ast::Expr::Lambda { range, ty: , body: , binder: }
+            let range = lambda.0.text_range();
+            let binder = lambda.binder().unwrap();
+            let body = lambda.body().unwrap();
+            //ast::Expr::Lambda { range, ty: binder.ty(), body: , binder: }
 
             unreachable!()
         }
@@ -58,6 +60,24 @@ fn infer(env: Env, expr: cst::Expr) -> Result<ast::Expr, TypeErr> {
             })
         }
     }
+}
+
+fn check_type(env: &Env, ty: cst::Type) -> Result<ast::Ty, TypeErr> {
+    let ty = match ty.kind() {
+        TypeKind::FuncTy(func) => ast::Ty::Func {
+            range: func.0.text_range(),
+            arg: Rc::new(check_type(env, func.arg())?),
+            res: Rc::new(check_type(env, func.res())?),
+        },
+        TypeKind::ParenTy(ty) => check_type(env, ty.ty()),
+        TypeKind::IntTy(int) => ast::Ty::Int {
+            range: int.0.text_range(),
+        },
+        TypeKind::BoolTy(bool) => ast::Ty::Bool {
+            range: bool.0.text_range(),
+        },
+    };
+    Ok(ty)
 }
 
 fn check(env: Env, expr: cst::Expr, ty: ast::Ty) -> Result<ast::Expr, TypeErr> {

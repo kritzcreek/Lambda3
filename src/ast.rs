@@ -12,7 +12,7 @@ pub enum Ty {
     Func {
         range: TextRange,
         arg: Rc<Ty>,
-        result: Rc<Ty>,
+        res: Rc<Ty>,
     },
     Forall {
         range: TextRange,

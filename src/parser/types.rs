@@ -6,9 +6,12 @@ pub fn typ(p: &mut Parser) {
     if !atom(p) {
         p.report_error("expected type".to_string())
     }
-
-    if p.eat(Arrow) {
+    if p.at(Arrow) {
+        p.finish_at(cp, TyArg);
+        p.bump(Arrow);
+        let cp2 = p.checkpoint();
         typ(p);
+        p.finish_at(cp2, TyRes);
         p.finish_at(cp, FuncTy)
     }
 }

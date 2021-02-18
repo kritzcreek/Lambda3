@@ -2,18 +2,21 @@
 source: src/cst.rs
 expression: "(input, parse.errors, node)"
 input_file: src/examples/types/simple_func_ty.l3
+
 ---
 (
     "Int -> Bool",
     [],
     Root@0..11
       FuncTy@0..11
-        IntTy@0..3
-          Int@0..3 "Int"
+        TyArg@0..3
+          IntTy@0..3
+            Int@0..3 "Int"
         Whitespace@3..4 " "
         Arrow@4..6 "->"
-        BoolTy@6..11
-          Whitespace@6..7 " "
-          Bool@7..11 "Bool"
+        TyRes@6..11
+          BoolTy@6..11
+            Whitespace@6..7 " "
+            Bool@7..11 "Bool"
     ,
 )

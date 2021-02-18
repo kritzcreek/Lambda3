@@ -2,6 +2,7 @@
 source: src/cst.rs
 expression: "(input, parse.errors, node)"
 input_file: src/examples/patterns/annotation.l3
+
 ---
 (
     "_ : Int -> Int",
@@ -13,13 +14,15 @@ input_file: src/examples/patterns/annotation.l3
         Whitespace@1..2 " "
         Colon@2..3 ":"
         FuncTy@3..14
-          IntTy@3..7
-            Whitespace@3..4 " "
-            Int@4..7 "Int"
+          TyArg@3..7
+            IntTy@3..7
+              Whitespace@3..4 " "
+              Int@4..7 "Int"
           Whitespace@7..8 " "
           Arrow@8..10 "->"
-          IntTy@10..14
-            Whitespace@10..11 " "
-            Int@11..14 "Int"
+          TyRes@10..14
+            IntTy@10..14
+              Whitespace@10..11 " "
+              Int@11..14 "Int"
     ,
 )
