@@ -1,6 +1,6 @@
 use logos::Logos;
 use num_derive::{FromPrimitive, ToPrimitive};
-use rowan::SmolStr;
+use smol_str::SmolStr;
 
 pub fn lex_str(input: &str) -> Vec<Item> {
     let mut tokens = vec![];
