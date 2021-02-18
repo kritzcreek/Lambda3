@@ -2,6 +2,7 @@
 source: src/cst.rs
 expression: "(input, parse.errors, node)"
 input_file: src/examples/expr/lambda_annotation.l3
+
 ---
 (
     "\\f : (Int -> Int). f 1",
@@ -18,13 +19,15 @@ input_file: src/examples/expr/lambda_annotation.l3
             Whitespace@4..5 " "
             LParen@5..6 "("
             FuncTy@6..16
-              IntTy@6..9
-                Int@6..9 "Int"
+              TyArg@6..9
+                IntTy@6..9
+                  Int@6..9 "Int"
               Whitespace@9..10 " "
               Arrow@10..12 "->"
-              IntTy@12..16
-                Whitespace@12..13 " "
-                Int@13..16 "Int"
+              TyRes@12..16
+                IntTy@12..16
+                  Whitespace@12..13 " "
+                  Int@13..16 "Int"
             RParen@16..17 ")"
         Dot@17..18 "."
         ApplicationE@18..22

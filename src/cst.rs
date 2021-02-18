@@ -196,6 +196,39 @@ impl Pattern {
             .unwrap()
     }
 }
+impl ParenTy {
+    pub fn ty(&self) -> Type {
+        self.0.children().find_map(Type::cast).unwrap()
+    }
+}
+
+impl FuncTy {
+    pub fn arg(&self) -> Type {
+        self.0
+            .children()
+            .find_map(|x| {
+                if x.kind() == SyntaxKind::TyArg {
+                    x.children().find_map(Type::cast)
+                } else {
+                    None
+                }
+            })
+            .unwrap()
+    }
+
+    pub fn res(&self) -> Type {
+        self.0
+            .children()
+            .find_map(|x| {
+                if x.kind() == SyntaxKind::TyRes {
+                    x.children().find_map(Type::cast)
+                } else {
+                    None
+                }
+            })
+            .unwrap()
+    }
+}
 
 impl ParenP {
     pub fn pattern(&self) -> Pattern {

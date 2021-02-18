@@ -2,6 +2,7 @@
 source: src/cst.rs
 expression: "(input, parse.errors, node)"
 input_file: src/examples/patterns/kitchen_sink.l3
+
 ---
 (
     "(((a) : Int -> Int) : Int)",
@@ -21,14 +22,16 @@ input_file: src/examples/patterns/kitchen_sink.l3
               Whitespace@5..6 " "
               Colon@6..7 ":"
               FuncTy@7..18
-                IntTy@7..11
-                  Whitespace@7..8 " "
-                  Int@8..11 "Int"
+                TyArg@7..11
+                  IntTy@7..11
+                    Whitespace@7..8 " "
+                    Int@8..11 "Int"
                 Whitespace@11..12 " "
                 Arrow@12..14 "->"
-                IntTy@14..18
-                  Whitespace@14..15 " "
-                  Int@15..18 "Int"
+                TyRes@14..18
+                  IntTy@14..18
+                    Whitespace@14..15 " "
+                    Int@15..18 "Int"
             RParen@18..19 ")"
           Whitespace@19..20 " "
           Colon@20..21 ":"

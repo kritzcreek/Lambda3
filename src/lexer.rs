@@ -162,6 +162,9 @@ pub enum SyntaxKind {
     BoolTy,
     FuncTy,
 
+    TyArg,
+    TyRes,
+
     // Expressions
     ParenE,       // a parenthesized expression
     LiteralE,     // a literal
