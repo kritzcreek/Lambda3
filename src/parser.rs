@@ -118,10 +118,10 @@ impl Parser {
         let (leading, (kind, text)) = self.tokens.pop().unwrap();
 
         for (kind, text) in leading {
-            self.builder.token(Lang::kind_to_raw(kind), text);
+            self.builder.token(Lang::kind_to_raw(kind), text.as_str());
         }
 
-        self.builder.token(Lang::kind_to_raw(kind), text);
+        self.builder.token(Lang::kind_to_raw(kind), text.as_str());
     }
 
     fn bump(&mut self, kind: SyntaxKind) {
