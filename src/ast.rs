@@ -1,7 +1,7 @@
 use rowan::TextRange;
 use std::rc::Rc;
 
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Debug)]
 pub enum Ty {
     Int {
         range: TextRange,
@@ -25,11 +25,68 @@ pub enum Ty {
     },
 }
 
-#[derive(Clone, Eq, PartialEq, Debug)]
+impl Eq for Ty {}
+
+impl PartialEq for Ty {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Ty::Int { .. }, Ty::Int { .. }) => true,
+            (Ty::Bool { .. }, Ty::Bool { .. }) => true,
+            (
+                Ty::Func {
+                    arg: arg1,
+                    res: res1,
+                    ..
+                },
+                Ty::Func {
+                    arg: arg2,
+                    res: res2,
+                    ..
+                },
+            ) => arg1.as_ref() == arg2.as_ref() && res1.as_ref() == res2.as_ref(),
+            (
+                Ty::Forall {
+                    binding: binding1,
+                    ty: ty1,
+                    ..
+                },
+                Ty::Forall {
+                    binding: binding2,
+                    ty: ty2,
+                    ..
+                },
+            ) =>
+            //TODO: alpha eq?
+            {
+                binding1 == binding2 && ty1.as_ref() == ty2.as_ref()
+            }
+            (Ty::Var { ident: ident1, .. }, Ty::Var { ident: ident2, .. }) => ident1 == ident2,
+            _ => false,
+        }
+    }
+
+    fn ne(&self, other: &Self) -> bool {
+        !(self == other)
+    }
+}
+
+#[derive(Clone, Debug)]
 pub struct Binding {
-    range: TextRange,
-    ty: Rc<Ty>,
-    ident: String,
+    pub range: TextRange,
+    pub ty: Rc<Ty>,
+    pub ident: String,
+}
+
+impl Eq for Binding {}
+
+impl PartialEq for Binding {
+    fn eq(&self, other: &Self) -> bool {
+        self.ident == other.ident && self.ty.as_ref() == other.ty.as_ref()
+    }
+
+    fn ne(&self, other: &Self) -> bool {
+        !(self == other)
+    }
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]

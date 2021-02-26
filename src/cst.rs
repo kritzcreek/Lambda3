@@ -1,6 +1,7 @@
 use crate::lexer::SyntaxKind;
 use crate::parser::{self, Parse};
 use crate::syntax::{SyntaxNode, SyntaxToken};
+use rowan::TextRange;
 
 pub fn parse(text: &str) -> Parse {
     parser::parse(text)
@@ -146,6 +147,10 @@ impl Type {
             .or_else(|| BoolTy::cast(self.0.clone()).map(TypeKind::BoolTy))
             .or_else(|| FuncTy::cast(self.0.clone()).map(TypeKind::FuncTy))
             .unwrap()
+    }
+
+    pub fn range(&self) -> TextRange {
+        self.0.text_range()
     }
 }
 
