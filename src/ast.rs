@@ -1,5 +1,8 @@
-use rowan::TextRange;
+use std::fmt;
+use std::fmt::{Debug, Display, Formatter};
 use std::rc::Rc;
+
+use rowan::TextRange;
 
 #[derive(Clone, Debug)]
 pub enum Ty {
@@ -16,13 +19,18 @@ pub enum Ty {
     },
     Forall {
         range: TextRange,
-        binding: Binding,
+        var: Name,
         ty: Rc<Ty>,
     },
     Var {
-        range: TextRange,
-        ident: String,
+        name: Name,
     },
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)] // TODO Ignore range for Eq
+pub struct Name {
+    pub range: TextRange,
+    pub ident: String,
 }
 
 impl Eq for Ty {}
@@ -46,21 +54,17 @@ impl PartialEq for Ty {
             ) => arg1.as_ref() == arg2.as_ref() && res1.as_ref() == res2.as_ref(),
             (
                 Ty::Forall {
-                    binding: binding1,
-                    ty: ty1,
-                    ..
+                    var: var1, ty: ty1, ..
                 },
                 Ty::Forall {
-                    binding: binding2,
-                    ty: ty2,
-                    ..
+                    var: var2, ty: ty2, ..
                 },
             ) =>
             //TODO: alpha eq?
             {
-                binding1 == binding2 && ty1.as_ref() == ty2.as_ref()
+                var1.ident == var2.ident && ty1.as_ref() == ty2.as_ref()
             }
-            (Ty::Var { ident: ident1, .. }, Ty::Var { ident: ident2, .. }) => ident1 == ident2,
+            (Ty::Var { name: name1 }, Ty::Var { name: name2 }) => name1.ident == name2.ident,
             _ => false,
         }
     }
@@ -93,8 +97,7 @@ impl PartialEq for Binding {
 pub enum Expr {
     Var {
         ty: Rc<Ty>,
-        range: TextRange,
-        ident: String,
+        name: Name,
     },
     Lambda {
         ty: Rc<Ty>,
@@ -123,9 +126,71 @@ pub enum Expr {
     TyLambda {
         ty: Rc<Ty>,
         range: TextRange,
-        binder: (TextRange, String),
+        binder: Name,
         body: Rc<Expr>,
     },
+}
+
+impl Display for Expr {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Expr::Lit { lit, .. } => {
+                write!(f, "{}", lit)
+            }
+            Expr::Var { name, .. } => {
+                write!(f, "{}", name.ident)
+            }
+            Expr::Lambda { binder, body, .. } => {
+                write!(f, "(\\{}. {})", binder, body)
+            }
+            Expr::App { func, arg, .. } => {
+                write!(f, "({} {})", func, arg)
+            }
+            Expr::TyApp { func, arg, .. } => {
+                write!(f, "({} {})", func, arg)
+            }
+            Expr::TyLambda { binder, body, .. } => {
+                write!(f, "(Λ{}. {})", binder.ident, body)
+            }
+        }
+    }
+}
+
+impl Display for Lit {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Lit::Int(int) => write!(f, "{}", int),
+            Lit::Bool(bool) => write!(f, "{}", bool),
+        }
+    }
+}
+
+impl Display for Ty {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Ty::Int { .. } => {
+                write!(f, "Int")
+            }
+            Ty::Bool { .. } => {
+                write!(f, "Bool")
+            }
+            Ty::Var { name, .. } => {
+                write!(f, "{}", name.ident)
+            }
+            Ty::Forall { var, ty, .. } => {
+                write!(f, "forall {}. {}", var.ident, ty)
+            }
+            Ty::Func { arg, res, .. } => {
+                write!(f, "({} -> {})", arg, res)
+            }
+        }
+    }
+}
+
+impl Display for Binding {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{} : {}", self.ident, self.ty)
+    }
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -137,8 +202,7 @@ pub enum Lit {
 pub fn var(range: TextRange, ident: String) -> Expr {
     Expr::Var {
         ty: Rc::new(Ty::Int { range }),
-        range,
-        ident,
+        name: Name { ident, range },
     }
 }
 

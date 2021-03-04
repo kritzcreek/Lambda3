@@ -1,33 +1,45 @@
-#![allow(dead_code, unused_imports, unused_variables)]
-use lambda3::ast;
-use lambda3::cst::{self, Expr, ExprKind};
+use rustyline::error::ReadlineError;
+use rustyline::Editor;
+
+use lambda3::cst;
+use lambda3::types::infer_expr;
 
 fn main() {
-    println!("Ok cool");
-    let expr = cst::parse("x").root().expr().unwrap();
-
-    let expr = cst::parse("\\x -> x").root().expr().unwrap();
-    let expr = cst::parse("\\x -> x x").root().expr().unwrap();
-    let expr = cst::parse("\\x -> x 42").root().expr().unwrap();
-    let expr = cst::parse("\\x -> false true").root().expr().unwrap();
-    //let _ = dbg!(ast::Expr::from_cst(dbg!(expr)));
-
-    //     match expr.kind() {
-    //         ExprKind::Var(var) => {}
-    //         ExprKind::Lambda(lambda) => {
-    // /*            println!("{:#?}", lambda.body());
-    //             println!("{:#?}", lambda.0.parent());*/
-    //
-    //             match lambda.body().unwrap().kind() {
-    //                 ExprKind::Var(_) => {}
-    //                 ExprKind::Lambda(lambda) => {
-    //                     println!("{:#?}", lambda.body());
-    //                     println!("{:#?}", lambda.0.parent().unwrap());
-    //                     println!("{:#?}", lambda.0.text());
-    //                 }
-    //                 ExprKind::Application(_) => {}
-    //             }
-    //         }
-    //         ExprKind::Application(app) => {}
-    //    }
+    // `()` can be used when no completer is required
+    let mut rl = Editor::<()>::new();
+    if rl.load_history("history.txt").is_err() {
+        println!("No previous history.");
+    }
+    loop {
+        let readline = rl.readline(">> ");
+        match readline {
+            Ok(line) => {
+                rl.add_history_entry(line.as_str());
+                let expr = cst::parse(line.as_str()).root().expr().unwrap();
+                println!("{:#?}", expr);
+                match infer_expr(expr) {
+                    Ok(expr_ast) => {
+                        println!("{}", expr_ast);
+                        println!("{}", expr_ast.ty());
+                    }
+                    Err(e) => {
+                        println!("TypeErr: {}", e);
+                    }
+                }
+            }
+            Err(ReadlineError::Interrupted) => {
+                println!("CTRL-C");
+                break;
+            }
+            Err(ReadlineError::Eof) => {
+                println!("CTRL-D");
+                break;
+            }
+            Err(err) => {
+                println!("Error: {:?}", err);
+                break;
+            }
+        }
+    }
+    rl.save_history("history.txt").unwrap();
 }

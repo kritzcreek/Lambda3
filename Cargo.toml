@@ -13,3 +13,4 @@ num-traits = "0.2.14"
 rowan = "0.12"
 smol_str = "0.1"
 insta = { version = "1.6", features = ["glob"] }
+rustyline = "7"
