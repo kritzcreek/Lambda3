@@ -252,13 +252,23 @@ impl AnnotationP {
 
 impl IntLit {
     pub fn int(&self) -> i32 {
-        first_token(&self.0).unwrap().text().to_string().parse().unwrap()
+        first_token(&self.0)
+            .unwrap()
+            .text()
+            .to_string()
+            .parse()
+            .unwrap()
     }
 }
 
 impl BooleanLit {
     pub fn bool(&self) -> bool {
-        first_token(&self.0).unwrap().text().to_string().parse().unwrap()
+        first_token(&self.0)
+            .unwrap()
+            .text()
+            .to_string()
+            .parse()
+            .unwrap()
     }
 }
 

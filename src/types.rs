@@ -41,7 +41,6 @@ impl Env {
 }
 
 impl Display for TypeErr {
-
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             TypeErr::UnknownVar { var, span } => {
