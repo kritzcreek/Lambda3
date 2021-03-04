@@ -100,7 +100,7 @@ fn infer(env: &Env, expr: cst::Expr) -> Result<ast::Expr, TypeErr> {
             )?;
             let ty_lambda = ast::Ty::Func {
                 arg: ty_binder,
-                res: ty_body.ty().clone(),
+                res: ty_body.ty(),
                 range,
             };
             Ok(ast::Expr::Lambda {

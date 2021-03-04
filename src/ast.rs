@@ -68,10 +68,6 @@ impl PartialEq for Ty {
             _ => false,
         }
     }
-
-    fn ne(&self, other: &Self) -> bool {
-        !(self == other)
-    }
 }
 
 #[derive(Clone, Debug)]
@@ -86,10 +82,6 @@ impl Eq for Binding {}
 impl PartialEq for Binding {
     fn eq(&self, other: &Self) -> bool {
         self.ident == other.ident && self.ty.as_ref() == other.ty.as_ref()
-    }
-
-    fn ne(&self, other: &Self) -> bool {
-        !(self == other)
     }
 }
 
