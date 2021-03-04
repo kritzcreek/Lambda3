@@ -1,11 +1,16 @@
-use crate::ast;
-use crate::ast::{Binding, Ty};
-use crate::cst::{self, ExprKind, TypeKind};
-use crate::types::TypeErr::{NotAFunction, TypeMismatch, UnknownVar};
-use rowan::TextRange;
 use std::collections::HashMap;
 use std::rc::Rc;
 
+use rowan::TextRange;
+
+use crate::ast;
+use crate::ast::{Binding, Name, Ty};
+use crate::cst::{self, ExprKind, PatternKind, TypeKind};
+use crate::types::TypeErr::{NotAFunction, TypeMismatch, UnknownVar};
+use std::fmt;
+use std::fmt::{Debug, Display, Formatter};
+
+#[derive(Debug)]
 pub enum TypeErr {
     UnknownVar { var: String, span: TextRange },
     TypeMismatch { expected: ast::Ty, actual: ast::Ty },
@@ -35,6 +40,23 @@ impl Env {
     }
 }
 
+impl Display for TypeErr {
+
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            TypeErr::UnknownVar { var, span } => {
+                write!(f, "unknown var {} at {:?}", var, span)
+            }
+            TypeErr::TypeMismatch { expected, actual } => {
+                write!(f, "expected {}, but got {}", expected, actual)
+            }
+            TypeErr::NotAFunction { actual } => {
+                write!(f, "{} is not a function", actual)
+            }
+        }
+    }
+}
+
 pub fn infer_expr(expr: cst::Expr) -> Result<ast::Expr, TypeErr> {
     infer(&Env::new(), expr)
 }
@@ -43,15 +65,14 @@ fn infer(env: &Env, expr: cst::Expr) -> Result<ast::Expr, TypeErr> {
     match expr.kind() {
         ExprKind::Var(var) => {
             let range = var.0.text_range();
-            let ident = var.0.text().to_string();
+            let ident = var.name();
             match env.values.get(&ident) {
                 None => Err(UnknownVar {
                     var: ident,
                     span: range,
                 }),
                 Some((ty, _)) => Ok(ast::Expr::Var {
-                    ident,
-                    range,
+                    name: Name { ident, range },
                     ty: Rc::clone(ty),
                 }),
             }
@@ -63,13 +84,19 @@ fn infer(env: &Env, expr: cst::Expr) -> Result<ast::Expr, TypeErr> {
 
             let ty_binder = check_type(env, binder.ty())?;
             let ty_binder = Rc::new(ty_binder);
+            let binder_ident = match binder.pattern().kind() {
+                PatternKind::VarP(v) => v.name(),
+                PatternKind::ParenP(_)
+                | PatternKind::WildcardP(_)
+                | PatternKind::AnnotationP(_) => panic!(),
+            };
             let binding = Binding {
-                ident: binder.0.to_string(),
+                ident: binder_ident.clone(),
                 ty: ty_binder.clone(),
                 range: binder.ty().range(),
             };
             let ty_body = infer(
-                &env.extend(binder.0.to_string(), ty_binder.clone(), binder.ty().range()),
+                &env.extend(binder_ident, ty_binder.clone(), binder.ty().range()),
                 body,
             )?;
             let ty_lambda = ast::Ty::Func {
