@@ -252,13 +252,13 @@ impl AnnotationP {
 
 impl IntLit {
     pub fn int(&self) -> i32 {
-        self.0.text().to_string().parse().unwrap()
+        first_token(&self.0).unwrap().text().to_string().parse().unwrap()
     }
 }
 
 impl BooleanLit {
     pub fn bool(&self) -> bool {
-        self.0.text().to_string().parse().unwrap()
+        first_token(&self.0).unwrap().text().to_string().parse().unwrap()
     }
 }
 
@@ -290,7 +290,14 @@ pub fn first_word(node: &SyntaxNode) -> Option<String> {
 
 impl Lambda {
     pub fn binder(&self) -> Option<AnnotationP> {
-        self.0.children().find_map(AnnotationP::cast)
+        let mut pattern = self.0.children().find_map(Pattern::cast)?;
+        loop {
+            match pattern.kind() {
+                PatternKind::ParenP(p) => pattern = p.pattern(),
+                PatternKind::AnnotationP(a) => return Some(a),
+                PatternKind::WildcardP(_) | PatternKind::VarP(_) => return None,
+            }
+        }
     }
 
     pub fn body(&self) -> Option<Expr> {
@@ -299,6 +306,12 @@ impl Lambda {
 }
 
 impl Var {
+    pub fn name(&self) -> String {
+        first_word(&self.0).unwrap()
+    }
+}
+
+impl VarP {
     pub fn name(&self) -> String {
         first_word(&self.0).unwrap()
     }
