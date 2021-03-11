@@ -1,0 +1,23 @@
+---
+source: crates/lambda3/src/cst.rs
+expression: "(input, parse.errors, node)"
+
+---
+(
+    "(\\. x)",
+    [
+        "expected pattern, got DOT",
+    ],
+    ROOT@0..6
+      PAREN_E@0..6
+        L_PAREN@0..1 "("
+        LAMBDA_E@1..5
+          BACKSLASH@1..2 "\\"
+          ERROR@2..2
+          DOT@2..3 "."
+          VAR_E@3..5
+            WHITESPACE@3..4 " "
+            IDENT@4..5 "x"
+        R_PAREN@5..6 ")"
+    ,
+)

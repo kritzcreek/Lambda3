@@ -1,0 +1,23 @@
+---
+source: crates/lambda3/src/cst.rs
+expression: "(input, parse.errors, node)"
+
+---
+(
+    "\\x. true false",
+    [],
+    ROOT@0..14
+      LAMBDA_E@0..14
+        BACKSLASH@0..1 "\\"
+        VAR_P@1..2
+          IDENT@1..2 "x"
+        DOT@2..3 "."
+        APPLICATION_E@3..14
+          LITERAL_E@3..8
+            WHITESPACE@3..4 " "
+            TRUE_KW@4..8 "true"
+          LITERAL_E@8..14
+            WHITESPACE@8..9 " "
+            FALSE_KW@9..14 "false"
+    ,
+)

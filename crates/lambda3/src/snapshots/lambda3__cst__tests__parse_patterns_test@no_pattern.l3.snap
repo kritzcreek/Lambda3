@@ -1,0 +1,17 @@
+---
+source: crates/lambda3/src/cst.rs
+expression: "(input, parse.errors, node)"
+
+---
+(
+    "\\",
+    [
+        "expected pattern, got BACKSLASH",
+        "Unexpected token EOF",
+    ],
+    ROOT@0..1
+      ERROR@0..0
+      ERROR@0..1
+        BACKSLASH@0..1 "\\"
+    ,
+)

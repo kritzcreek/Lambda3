@@ -1,0 +1,21 @@
+---
+source: crates/lambda3/src/cst.rs
+expression: "(input, parse.errors, node)"
+
+---
+(
+    "Int -> Bool",
+    [],
+    ROOT@0..11
+      FUNC_TY@0..11
+        TY_ARG@0..3
+          INT_TY@0..3
+            INT@0..3 "Int"
+        WHITESPACE@3..4 " "
+        ARROW@4..6 "->"
+        TY_RES@6..11
+          BOOL_TY@6..11
+            WHITESPACE@6..7 " "
+            BOOL@7..11 "Bool"
+    ,
+)

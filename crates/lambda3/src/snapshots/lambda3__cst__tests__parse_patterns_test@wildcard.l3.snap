@@ -1,0 +1,13 @@
+---
+source: crates/lambda3/src/cst.rs
+expression: "(input, parse.errors, node)"
+
+---
+(
+    "_",
+    [],
+    ROOT@0..1
+      WILDCARD_P@0..1
+        UNDERSCORE@0..1 "_"
+    ,
+)

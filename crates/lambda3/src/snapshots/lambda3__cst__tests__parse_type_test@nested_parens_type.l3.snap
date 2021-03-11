@@ -1,0 +1,37 @@
+---
+source: crates/lambda3/src/cst.rs
+expression: "(input, parse.errors, node)"
+
+---
+(
+    "(Int->Int)->(Bool->Bool)",
+    [],
+    ROOT@0..24
+      FUNC_TY@0..24
+        TY_ARG@0..10
+          PAREN_TY@0..10
+            L_PAREN@0..1 "("
+            FUNC_TY@1..9
+              TY_ARG@1..4
+                INT_TY@1..4
+                  INT@1..4 "Int"
+              ARROW@4..6 "->"
+              TY_RES@6..9
+                INT_TY@6..9
+                  INT@6..9 "Int"
+            R_PAREN@9..10 ")"
+        ARROW@10..12 "->"
+        TY_RES@12..24
+          PAREN_TY@12..24
+            L_PAREN@12..13 "("
+            FUNC_TY@13..23
+              TY_ARG@13..17
+                BOOL_TY@13..17
+                  BOOL@13..17 "Bool"
+              ARROW@17..19 "->"
+              TY_RES@19..23
+                BOOL_TY@19..23
+                  BOOL@19..23 "Bool"
+            R_PAREN@23..24 ")"
+    ,
+)

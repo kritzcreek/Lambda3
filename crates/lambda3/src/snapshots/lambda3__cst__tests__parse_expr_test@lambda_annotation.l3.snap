@@ -1,0 +1,40 @@
+---
+source: crates/lambda3/src/cst.rs
+expression: "(input, parse.errors, node)"
+
+---
+(
+    "\\f : (Int -> Int). f 1",
+    [],
+    ROOT@0..22
+      LAMBDA_E@0..22
+        BACKSLASH@0..1 "\\"
+        ANNOTATION_P@1..17
+          VAR_P@1..2
+            IDENT@1..2 "f"
+          WHITESPACE@2..3 " "
+          COLON@3..4 ":"
+          PAREN_TY@4..17
+            WHITESPACE@4..5 " "
+            L_PAREN@5..6 "("
+            FUNC_TY@6..16
+              TY_ARG@6..9
+                INT_TY@6..9
+                  INT@6..9 "Int"
+              WHITESPACE@9..10 " "
+              ARROW@10..12 "->"
+              TY_RES@12..16
+                INT_TY@12..16
+                  WHITESPACE@12..13 " "
+                  INT@13..16 "Int"
+            R_PAREN@16..17 ")"
+        DOT@17..18 "."
+        APPLICATION_E@18..22
+          VAR_E@18..20
+            WHITESPACE@18..19 " "
+            IDENT@19..20 "f"
+          LITERAL_E@20..22
+            WHITESPACE@20..21 " "
+            NUMBER_LIT@21..22 "1"
+    ,
+)
