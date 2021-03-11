@@ -1,0 +1,37 @@
+Type =
+    ParenTy
+  | IntTy
+  | BoolTy
+  | FuncTy
+
+ParenTy = '(' Type ')'
+IntTy = 'Int'
+BoolTy = 'Bool'
+
+TyArg = Type
+TyRes = Type
+FuncTy = arg:TyArg '->' result:TyRes
+
+Pattern =
+    WildcardP
+  | ParenP
+  | VarP
+  | AnnotationP
+
+WildcardP = '_'
+ParenP = '(' Pattern ')'
+VarP = 'ident'
+AnnotationP = Pattern ':' Type
+
+Expr =
+    LiteralE
+  | VarE
+  | LambdaE
+  | ApplicationE
+  | ParenE
+
+LiteralE = 'number_lit' | 'false' | 'true'
+VarE = 'ident'
+LambdaE = 'backslash' binder:AnnotationP '.' body:Expr
+ApplicationE = func:Expr arg:Expr
+ParenE = '(' Expr ')'

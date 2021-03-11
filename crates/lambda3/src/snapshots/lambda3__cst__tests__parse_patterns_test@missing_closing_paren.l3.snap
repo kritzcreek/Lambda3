@@ -1,0 +1,24 @@
+---
+source: crates/lambda3/src/cst.rs
+expression: "(input, parse.errors, node)"
+
+---
+(
+    "(_ : Int",
+    [
+        "missing closing paren, got EOF",
+    ],
+    ROOT@0..8
+      PAREN_P@0..8
+        L_PAREN@0..1 "("
+        ANNOTATION_P@1..8
+          WILDCARD_P@1..2
+            UNDERSCORE@1..2 "_"
+          WHITESPACE@2..3 " "
+          COLON@3..4 ":"
+          INT_TY@4..8
+            WHITESPACE@4..5 " "
+            INT@5..8 "Int"
+        ERROR@8..8
+    ,
+)

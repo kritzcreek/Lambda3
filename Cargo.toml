@@ -1,16 +1,2 @@
-[package]
-name = "lambda3"
-version = "0.1.0"
-authors = ["kritzcreek <christoph.hegemann1337@gmail.com>"]
-edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-logos = "0.12"
-num-derive = "0.3.3"
-num-traits = "0.2.14"
-rowan = "0.12"
-smol_str = "0.1"
-insta = { version = "1.6", features = ["glob"] }
-rustyline = "7"
+[workspace]
+members = ["crates/*", "xtask/"]
