@@ -35,12 +35,13 @@ pub trait AstToken {
 }
 
 /// An iterator over `SyntaxNode` children of a particular AST type.
+#[allow(unused)]
 #[derive(Debug, Clone)]
 pub struct AstChildren<N> {
     inner: SyntaxNodeChildren,
     ph: PhantomData<N>,
 }
-
+#[allow(unused)]
 impl<N> AstChildren<N> {
     fn new(parent: &SyntaxNode) -> Self {
         AstChildren {
@@ -49,7 +50,7 @@ impl<N> AstChildren<N> {
         }
     }
 }
-
+#[allow(unused)]
 impl<N: AstNode> Iterator for AstChildren<N> {
     type Item = N;
     fn next(&mut self) -> Option<N> {
@@ -64,6 +65,7 @@ pub(crate) mod support {
         parent.children().find_map(N::cast)
     }
 
+    #[allow(unused)]
     pub(crate) fn children<N: AstNode>(parent: &SyntaxNode) -> AstChildren<N> {
         AstChildren::new(parent)
     }

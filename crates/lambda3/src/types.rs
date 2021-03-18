@@ -1,16 +1,16 @@
 use std::collections::HashMap;
+use std::fmt;
+use std::fmt::{Debug, Display, Formatter};
 use std::rc::Rc;
 
 use rowan::TextRange;
 
 use crate::ast;
 use crate::ast::{Binding, Name, Ty};
-use crate::syntax::nodes as cst;
-use crate::syntax::nodes::Expr;
+use crate::syntax::ast::AstNode;
+use crate::syntax::nodes::{Expr, Pattern};
+use crate::syntax::{nodes as cst, LiteralKind};
 use crate::types::TypeErr::{NotAFunction, TypeMismatch, UnknownVar};
-use std::fmt;
-use std::fmt::{Debug, Display, Formatter};
-use std::hint::unreachable_unchecked;
 
 #[derive(Debug)]
 pub enum TypeErr {
@@ -80,39 +80,39 @@ fn infer(env: &Env, expr: cst::Expr) -> Result<ast::Expr, TypeErr> {
             }
         }
         cst::Expr::LambdaE(lambda) => {
-            // let range = lambda.0.text_range();
-            // let binder = lambda.binder().unwrap();
-            // let body = lambda.body().unwrap();
-            //
-            // let ty_binder = check_type(env, binder.ty())?;
-            // let ty_binder = Rc::new(ty_binder);
-            // let binder_ident = match binder.pattern().kind() {
-            //     PatternKind::VarP(v) => v.name(),
-            //     PatternKind::ParenP(_)
-            //     | PatternKind::WildcardP(_)
-            //     | PatternKind::AnnotationP(_) => panic!(),
-            // };
-            // let binding = Binding {
-            //     ident: binder_ident.clone(),
-            //     ty: ty_binder.clone(),
-            //     range: binder.ty().range(),
-            // };
-            // let ty_body = infer(
-            //     &env.extend(binder_ident, ty_binder.clone(), binder.ty().range()),
-            //     body,
-            // )?;
-            // let ty_lambda = ast::Ty::Func {
-            //     arg: ty_binder,
-            //     res: ty_body.ty(),
-            //     range,
-            // };
-            // Ok(ast::Expr::Lambda {
-            //     range,
-            //     ty: Rc::new(ty_lambda),
-            //     body: Rc::new(ty_body),
-            //     binder: binding,
-            // })
-            unreachable!()
+            let range = TextRange::new(
+                lambda.backslash_token().unwrap().text_range().start(),
+                lambda.syntax.text_range().end(),
+            );
+            let binder = lambda.binder().unwrap();
+            let body = lambda.body().unwrap();
+
+            let ty_binder = check_type(env, binder.ty().unwrap())?;
+            let ty_binder = Rc::new(ty_binder);
+            let binder_ident = match binder.pattern().unwrap() {
+                Pattern::VarP(v) => v.name(),
+                Pattern::AnnotationP(_) | Pattern::WildcardP(_) | Pattern::ParenP(_) => {
+                    panic!("Non-VarP annotation in lambda")
+                }
+            };
+            let ty_range = binder.ty().unwrap().syntax().text_range();
+            let binding = Binding {
+                ident: binder_ident.clone(),
+                ty: ty_binder.clone(),
+                range: ty_range,
+            };
+            let ty_body = infer(&env.extend(binder_ident, ty_binder.clone(), ty_range), body)?;
+            let ty_lambda = ast::Ty::Func {
+                arg: ty_binder,
+                res: ty_body.ty(),
+                range,
+            };
+            Ok(ast::Expr::Lambda {
+                range,
+                ty: Rc::new(ty_lambda),
+                body: Rc::new(ty_body),
+                binder: binding,
+            })
         }
         cst::Expr::ApplicationE(app) => {
             let typed_func = infer(env, app.func().unwrap())?;
@@ -129,26 +129,27 @@ fn infer(env: &Env, expr: cst::Expr) -> Result<ast::Expr, TypeErr> {
             })
         }
 
-        cst::Expr::LiteralE(lit) => {
-            unreachable!()
-            // let range = lit.0.text_range();
-            // Ok(ast::Expr::Lit {
-            //     range,
-            //     ty: Rc::new(ast::Ty::Bool { range }),
-            //     lit: ast::Lit::Bool(lit.bool()),
-            // })
-            //
-            // cst::Expr::IntLit(lit) => {
-            //     let range = lit.0.text_range();
-            //     Ok(ast::Expr::Lit {
-            //         range,
-            //         ty: Rc::new(ast::Ty::Int { range }),
-            //         lit: ast::Lit::Int(lit.int()),
-            //     })
-            // }
-        }
+        cst::Expr::LiteralE(lit) => match lit.kind().unwrap() {
+            LiteralKind::Int(i, tkn) => {
+                let range = tkn.text_range();
+                Ok(ast::Expr::Lit {
+                    range,
+                    ty: Rc::new(ast::Ty::Int { range }),
+                    lit: ast::Lit::Int(i),
+                })
+            }
+            LiteralKind::Bool(b, tkn) => {
+                let range = tkn.text_range();
+                Ok(ast::Expr::Lit {
+                    range,
+                    ty: Rc::new(ast::Ty::Bool { range }),
+                    lit: ast::Lit::Bool(b),
+                })
+            }
+        },
         Expr::ParenE(paren_e) => {
-            unreachable!()
+            let inner = paren_e.expr().unwrap();
+            infer(env, inner)
         }
     }
 }
