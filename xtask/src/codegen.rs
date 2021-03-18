@@ -68,7 +68,7 @@ pub fn run() -> Result<()> {
     generate_syntax()
 }
 
-fn generate_nodes(grammar: &AstSrc) -> Result<String> {
+fn generate_nodes(grammar: &AstSrc) -> String {
     let (node_defs, node_boilerplate_impls): (Vec<_>, Vec<_>) = grammar
         .nodes
         .iter()
@@ -239,9 +239,7 @@ fn generate_nodes(grammar: &AstSrc) -> Result<String> {
         #(#display_impls)*
     };
 
-    let ast = ast.to_string().replace("T ! [", "T![");
-
-    Ok(ast)
+    ast.to_string().replace("T ! [", "T![")
 }
 
 fn generate_syntax() -> Result<()> {
@@ -255,7 +253,7 @@ fn generate_syntax() -> Result<()> {
 
     println!("{:#?}", ast);
 
-    let src = generate_nodes(&ast)?;
+    let src = generate_nodes(&ast);
 
     let nodes_path = project_root()
         .join("crates")
