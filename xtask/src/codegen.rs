@@ -464,7 +464,13 @@ fn pluralize(s: &str) -> String {
 
 impl Field {
     fn is_many(&self) -> bool {
-        matches!(self, Field::Node { cardinality: Cardinality::Many, .. })
+        matches!(
+            self,
+            Field::Node {
+                cardinality: Cardinality::Many,
+                ..
+            }
+        )
     }
     fn token_kind(&self) -> Option<proc_macro2::TokenStream> {
         match self {
