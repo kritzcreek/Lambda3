@@ -33,5 +33,6 @@ Expr =
 LiteralE = 'number_lit' | 'false' | 'true'
 VarE = 'ident'
 LambdaE = 'backslash' binder:AnnotationP '.' body:Expr
-ApplicationE = func:Expr arg:Expr
+ExprArg = Expr
+ApplicationE = func:Expr arg:ExprArg
 ParenE = '(' Expr ')'

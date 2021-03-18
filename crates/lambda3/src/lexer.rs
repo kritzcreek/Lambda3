@@ -173,6 +173,8 @@ pub enum SyntaxKind {
     LAMBDA_E,      // a func expression
     APPLICATION_E, // a function application
 
+    EXPR_ARG,
+
     ROOT,
 
     // Patterns

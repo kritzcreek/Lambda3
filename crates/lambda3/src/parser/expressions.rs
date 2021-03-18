@@ -21,12 +21,14 @@ pub fn expr(p: &mut Parser) -> ExprRes {
         }
     }
     loop {
+        let arg_checkpoint = p.checkpoint();
         match atom(p) {
             None => break,
             Some(ExprRes::Lul(s)) => {
                 p.report_error(s);
             }
             Some(ExprRes::Ok) => {
+                p.finish_at(arg_checkpoint, EXPR_ARG);
                 p.start_node_at(checkpoint, APPLICATION_E);
                 is_application = true;
             }

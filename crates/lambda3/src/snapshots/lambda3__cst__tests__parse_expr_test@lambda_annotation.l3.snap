@@ -1,7 +1,7 @@
 ---
 source: crates/lambda3/src/cst.rs
 expression: "(input, parse.errors, node)"
-
+input_file: crates/lambda3/src/examples/expr/lambda_annotation.l3
 ---
 (
     "\\f : (Int -> Int). f 1",
@@ -33,8 +33,9 @@ expression: "(input, parse.errors, node)"
           VAR_E@18..20
             WHITESPACE@18..19 " "
             IDENT@19..20 "f"
-          LITERAL_E@20..22
-            WHITESPACE@20..21 " "
-            NUMBER_LIT@21..22 "1"
+          EXPR_ARG@20..22
+            LITERAL_E@20..22
+              WHITESPACE@20..21 " "
+              NUMBER_LIT@21..22 "1"
     ,
 )
