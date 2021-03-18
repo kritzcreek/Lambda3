@@ -1,6 +1,4 @@
-use crate::lexer::SyntaxKind;
 use crate::parser::{self, Parse};
-use crate::syntax::{SyntaxNode, SyntaxToken};
 
 pub fn parse(text: &str) -> Parse {
     parser::parse(text)

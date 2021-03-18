@@ -1,6 +1,5 @@
 use rowan::{Checkpoint, GreenNode, GreenNodeBuilder, Language};
 
-use crate::cst;
 use crate::lexer::SyntaxKind::{EOF, ERROR, ROOT};
 use crate::lexer::{lex_str, SyntaxKind, Token};
 use crate::syntax::ast::AstNode;
@@ -39,7 +38,7 @@ impl Parse {
     pub fn expr(&self) -> nodes::Expr {
         self.syntax()
             .children()
-            .find_map(|n| nodes::Expr::cast(n))
+            .find_map(nodes::Expr::cast)
             .unwrap()
     }
 
