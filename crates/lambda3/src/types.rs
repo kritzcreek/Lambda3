@@ -120,7 +120,11 @@ fn infer(env: &Env, expr: cst::Expr) -> Result<ast::Expr, TypeErr> {
                 Ty::Func { arg, res, .. } => (arg.clone(), res.clone()),
                 ty => return Err(NotAFunction { actual: ty.clone() }),
             };
-            let typed_arg = check(env, app.arg().unwrap(), ty_arg.as_ref().clone())?;
+            let typed_arg = check(
+                env,
+                app.arg().unwrap().expr().unwrap(),
+                ty_arg.as_ref().clone(),
+            )?;
             Ok(ast::Expr::App {
                 ty: ty_res,
                 range: app.syntax.text_range(),

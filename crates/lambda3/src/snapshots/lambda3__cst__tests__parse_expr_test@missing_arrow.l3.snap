@@ -1,7 +1,7 @@
 ---
 source: crates/lambda3/src/cst.rs
 expression: "(input, parse.errors, node)"
-
+input_file: crates/lambda3/src/examples/expr/missing_arrow.l3
 ---
 (
     "(\\x  x x) (\\y. y)",
@@ -24,17 +24,18 @@ expression: "(input, parse.errors, node)"
             WHITESPACE@6..7 " "
             IDENT@7..8 "x"
           R_PAREN@8..9 ")"
-        PAREN_E@9..17
-          WHITESPACE@9..10 " "
-          L_PAREN@10..11 "("
-          LAMBDA_E@11..16
-            BACKSLASH@11..12 "\\"
-            VAR_P@12..13
-              IDENT@12..13 "y"
-            DOT@13..14 "."
-            VAR_E@14..16
-              WHITESPACE@14..15 " "
-              IDENT@15..16 "y"
-          R_PAREN@16..17 ")"
+        EXPR_ARG@9..17
+          PAREN_E@9..17
+            WHITESPACE@9..10 " "
+            L_PAREN@10..11 "("
+            LAMBDA_E@11..16
+              BACKSLASH@11..12 "\\"
+              VAR_P@12..13
+                IDENT@12..13 "y"
+              DOT@13..14 "."
+              VAR_E@14..16
+                WHITESPACE@14..15 " "
+                IDENT@15..16 "y"
+            R_PAREN@16..17 ")"
     ,
 )
