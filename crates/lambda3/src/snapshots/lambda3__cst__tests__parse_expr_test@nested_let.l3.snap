@@ -1,0 +1,47 @@
+---
+source: crates/lambda3/src/cst.rs
+expression: "(input, parse.errors, node)"
+input_file: crates/lambda3/src/examples/expr/nested_let.l3
+
+---
+(
+    "let x = 3 in\nlet y = 4 in\nx y",
+    [],
+    ROOT@0..29
+      LET_E@0..29
+        LET_KW@0..3 "let"
+        VAR_P@3..5
+          WHITESPACE@3..4 " "
+          IDENT@4..5 "x"
+        WHITESPACE@5..6 " "
+        EQUALS@6..7 "="
+        LITERAL_E@7..9
+          WHITESPACE@7..8 " "
+          NUMBER_LIT@8..9 "3"
+        WHITESPACE@9..10 " "
+        IN_KW@10..12 "in"
+        EXPR_LET_BODY@12..29
+          LET_E@12..29
+            WHITESPACE@12..13 "\n"
+            LET_KW@13..16 "let"
+            VAR_P@16..18
+              WHITESPACE@16..17 " "
+              IDENT@17..18 "y"
+            WHITESPACE@18..19 " "
+            EQUALS@19..20 "="
+            LITERAL_E@20..22
+              WHITESPACE@20..21 " "
+              NUMBER_LIT@21..22 "4"
+            WHITESPACE@22..23 " "
+            IN_KW@23..25 "in"
+            EXPR_LET_BODY@25..29
+              APPLICATION_E@25..29
+                VAR_E@25..27
+                  WHITESPACE@25..26 "\n"
+                  IDENT@26..27 "x"
+                EXPR_ARG@27..29
+                  VAR_E@27..29
+                    WHITESPACE@27..28 " "
+                    IDENT@28..29 "y"
+    ,
+)

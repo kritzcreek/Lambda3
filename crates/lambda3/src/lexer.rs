@@ -70,6 +70,9 @@ pub enum SyntaxKind {
     #[token("let")]
     LET_KW,
 
+    #[token("in")]
+    IN_KW,
+
     #[token("true")]
     TRUE_KW,
 
@@ -172,8 +175,10 @@ pub enum SyntaxKind {
     VAR_E,         // wraps a WORD token
     LAMBDA_E,      // a func expression
     APPLICATION_E, // a function application
+    LET_E,
 
     EXPR_ARG,
+    EXPR_LET_BODY,
 
     ROOT,
 
@@ -225,6 +230,7 @@ macro_rules ! T {
     [if] => { SyntaxKind::IF_KW };
     [else] => { SyntaxKind::ELSE_KW };
     [let] => { SyntaxKind::LET_KW };
+    [in] => { SyntaxKind::IN_KW };
     [switch] => { SyntaxKind::SWITCH_KW };
     [module] => { SyntaxKind::MODULE_KW };
     [var] => { SyntaxKind::VAR_KW };

@@ -29,6 +29,7 @@ Expr =
   | LambdaE
   | ApplicationE
   | ParenE
+  | LetE
 
 LiteralE = 'number_lit' | 'false' | 'true'
 VarE = 'ident'
@@ -36,3 +37,5 @@ LambdaE = 'backslash' binder:AnnotationP '.' body:Expr
 ExprArg = Expr
 ApplicationE = func:Expr arg:ExprArg
 ParenE = '(' Expr ')'
+LetE = 'let' Pattern '=' expr:Expr 'in' body:ExprLetBody
+ExprLetBody = Expr

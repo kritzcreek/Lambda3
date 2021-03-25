@@ -155,6 +155,9 @@ fn infer(env: &Env, expr: cst::Expr) -> Result<ast::Expr, TypeErr> {
             let inner = paren_e.expr().unwrap();
             infer(env, inner)
         }
+        Expr::LetE(_) => {
+            unreachable!()
+        }
     }
 }
 
