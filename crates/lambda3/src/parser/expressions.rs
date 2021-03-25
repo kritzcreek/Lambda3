@@ -51,11 +51,45 @@ fn atom(p: &mut Parser) -> Option<ExprRes> {
         IDENT => parse_var(p),
         NUMBER_LIT | TRUE_KW | FALSE_KW => parse_literal(p),
         BACKSLASH => return parse_lambda(p),
+        LET_KW => parse_let(p),
         LEXER_ERROR => p.bump_any(),
         _ => return None,
     }
 
     Some(ExprRes::Ok)
+}
+
+fn parse_let(p: &mut Parser) {
+    p.start_node(LET_E);
+    p.bump(LET_KW);
+    patterns::parse_pattern(p);
+    if !p.eat(EQUALS) {
+        p.report_error(format!(
+            "expected '=' in let expression but got {:?}",
+            p.current()
+        ))
+    }
+    if let ExprRes::Lul(err) = expr(p) {
+        p.start_node(ERROR);
+        p.errors.push(err);
+        while !p.eat(IN_KW) {}
+        p.finish_node();
+    }
+
+    if !p.eat(IN_KW) {
+        p.report_error(format!(
+            "expected 'in' in let expression but got {:?}",
+            p.current()
+        ))
+    }
+
+    p.start_node(EXPR_LET_BODY);
+    if let ExprRes::Lul(err) = expr(p) {
+        p.report_error(err)
+    };
+    p.finish_node();
+
+    p.finish_node();
 }
 
 fn parse_parenthesized(p: &mut Parser) {

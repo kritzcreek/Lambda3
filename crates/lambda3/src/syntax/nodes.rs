@@ -188,10 +188,43 @@ impl ParenE {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct LetE {
+    pub(crate) syntax: SyntaxNode,
+}
+impl LetE {
+    pub fn let_token(&self) -> Option<SyntaxToken> {
+        support::token(&self.syntax, T![let])
+    }
+    pub fn pattern(&self) -> Option<Pattern> {
+        support::child(&self.syntax)
+    }
+    pub fn eq_token(&self) -> Option<SyntaxToken> {
+        support::token(&self.syntax, T![=])
+    }
+    pub fn expr(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+    pub fn in_token(&self) -> Option<SyntaxToken> {
+        support::token(&self.syntax, T![in])
+    }
+    pub fn body(&self) -> Option<ExprLetBody> {
+        support::child(&self.syntax)
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ExprArg {
     pub(crate) syntax: SyntaxNode,
 }
 impl ExprArg {
+    pub fn expr(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ExprLetBody {
+    pub(crate) syntax: SyntaxNode,
+}
+impl ExprLetBody {
     pub fn expr(&self) -> Option<Expr> {
         support::child(&self.syntax)
     }
@@ -217,6 +250,7 @@ pub enum Expr {
     LambdaE(LambdaE),
     ApplicationE(ApplicationE),
     ParenE(ParenE),
+    LetE(LetE),
 }
 impl AstNode for ParenTy {
     fn can_cast(kind: SyntaxKind) -> bool {
@@ -443,9 +477,39 @@ impl AstNode for ParenE {
         &self.syntax
     }
 }
+impl AstNode for LetE {
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == LET_E
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+}
 impl AstNode for ExprArg {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == EXPR_ARG
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+}
+impl AstNode for ExprLetBody {
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == EXPR_LET_BODY
     }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         if Self::can_cast(syntax.kind()) {
@@ -575,10 +639,15 @@ impl From<ParenE> for Expr {
         Expr::ParenE(node)
     }
 }
+impl From<LetE> for Expr {
+    fn from(node: LetE) -> Expr {
+        Expr::LetE(node)
+    }
+}
 impl AstNode for Expr {
     fn can_cast(kind: SyntaxKind) -> bool {
         match kind {
-            LITERAL_E | VAR_E | LAMBDA_E | APPLICATION_E | PAREN_E => true,
+            LITERAL_E | VAR_E | LAMBDA_E | APPLICATION_E | PAREN_E | LET_E => true,
             _ => false,
         }
     }
@@ -589,6 +658,7 @@ impl AstNode for Expr {
             LAMBDA_E => Expr::LambdaE(LambdaE { syntax }),
             APPLICATION_E => Expr::ApplicationE(ApplicationE { syntax }),
             PAREN_E => Expr::ParenE(ParenE { syntax }),
+            LET_E => Expr::LetE(LetE { syntax }),
             _ => return None,
         };
         Some(res)
@@ -600,6 +670,7 @@ impl AstNode for Expr {
             Expr::LambdaE(it) => &it.syntax,
             Expr::ApplicationE(it) => &it.syntax,
             Expr::ParenE(it) => &it.syntax,
+            Expr::LetE(it) => &it.syntax,
         }
     }
 }
@@ -693,7 +764,17 @@ impl std::fmt::Display for ParenE {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
+impl std::fmt::Display for LetE {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
 impl std::fmt::Display for ExprArg {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for ExprLetBody {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }

@@ -1,0 +1,28 @@
+---
+source: crates/lambda3/src/cst.rs
+expression: "(input, parse.errors, node)"
+input_file: crates/lambda3/src/examples/expr/simple_let.l3
+
+---
+(
+    "let _ = 1 in 2",
+    [],
+    ROOT@0..14
+      LET_E@0..14
+        LET_KW@0..3 "let"
+        WILDCARD_P@3..5
+          WHITESPACE@3..4 " "
+          UNDERSCORE@4..5 "_"
+        WHITESPACE@5..6 " "
+        EQUALS@6..7 "="
+        LITERAL_E@7..9
+          WHITESPACE@7..8 " "
+          NUMBER_LIT@8..9 "1"
+        WHITESPACE@9..10 " "
+        IN_KW@10..12 "in"
+        EXPR_LET_BODY@12..14
+          LITERAL_E@12..14
+            WHITESPACE@12..13 " "
+            NUMBER_LIT@13..14 "2"
+    ,
+)

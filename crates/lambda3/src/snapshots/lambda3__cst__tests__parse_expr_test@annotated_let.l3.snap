@@ -1,0 +1,34 @@
+---
+source: crates/lambda3/src/cst.rs
+expression: "(input, parse.errors, node)"
+input_file: crates/lambda3/src/examples/expr/annotated_let.l3
+
+---
+(
+    "let x : Int = 1 in 2",
+    [],
+    ROOT@0..20
+      LET_E@0..20
+        LET_KW@0..3 "let"
+        ANNOTATION_P@3..11
+          VAR_P@3..5
+            WHITESPACE@3..4 " "
+            IDENT@4..5 "x"
+          WHITESPACE@5..6 " "
+          COLON@6..7 ":"
+          INT_TY@7..11
+            WHITESPACE@7..8 " "
+            INT@8..11 "Int"
+        WHITESPACE@11..12 " "
+        EQUALS@12..13 "="
+        LITERAL_E@13..15
+          WHITESPACE@13..14 " "
+          NUMBER_LIT@14..15 "1"
+        WHITESPACE@15..16 " "
+        IN_KW@16..18 "in"
+        EXPR_LET_BODY@18..20
+          LITERAL_E@18..20
+            WHITESPACE@18..19 " "
+            NUMBER_LIT@19..20 "2"
+    ,
+)
