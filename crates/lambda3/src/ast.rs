@@ -121,6 +121,13 @@ pub enum Expr {
         binder: Name,
         body: Rc<Expr>,
     },
+    Let {
+        ty: Rc<Ty>,
+        range: TextRange,
+        binder: Binding,
+        expr: Rc<Expr>,
+        body: Rc<Expr>,
+    },
 }
 
 impl Display for Expr {
@@ -143,6 +150,11 @@ impl Display for Expr {
             }
             Expr::TyLambda { binder, body, .. } => {
                 write!(f, "(Λ{}. {})", binder.ident, body)
+            }
+            Expr::Let {
+                binder, expr, body, ..
+            } => {
+                write!(f, "(let {} = {} in {})", binder.ident, expr, body)
             }
         }
     }
@@ -207,6 +219,7 @@ impl Expr {
             Expr::Lit { ty, .. } => ty.clone(),
             Expr::TyApp { ty, .. } => ty.clone(),
             Expr::TyLambda { ty, .. } => ty.clone(),
+            Expr::Let { ty, .. } => ty.clone(),
         }
     }
 }

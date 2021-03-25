@@ -34,6 +34,10 @@ impl Env {
         }
     }
 
+    pub fn extend_with_binding(&self, binding: ast::Binding) -> Env {
+        self.extend(binding.ident, binding.ty, binding.range)
+    }
+
     pub fn new() -> Env {
         Env {
             values: HashMap::new(),
@@ -155,8 +159,41 @@ fn infer(env: &Env, expr: cst::Expr) -> Result<ast::Expr, TypeErr> {
             let inner = paren_e.expr().unwrap();
             infer(env, inner)
         }
-        Expr::LetE(_) => {
-            unreachable!()
+        Expr::LetE(let_e) => {
+            let pattern = let_e.pattern().unwrap();
+            let expr = let_e.expr().unwrap();
+            let body = let_e.body().unwrap().expr().unwrap();
+
+            let typed_expr = infer(env, expr)?;
+            let binding = check_pattern(env, pattern, typed_expr.ty())?;
+            let temp_env = env.extend_with_binding(binding.clone());
+
+            let typed_body = infer(&temp_env, body)?;
+            Ok(ast::Expr::Let {
+                ty: typed_body.ty(),
+                range: let_e.syntax.text_range(),
+                binder: binding,
+                expr: Rc::new(typed_expr),
+                body: Rc::new(typed_body),
+            })
+        }
+    }
+}
+
+//TODO should return ast::Pattern
+fn check_pattern(
+    _env: &Env,
+    pattern: cst::Pattern,
+    ty: Rc<ast::Ty>,
+) -> Result<ast::Binding, TypeErr> {
+    match pattern {
+        Pattern::VarP(ref v) => Ok(Binding {
+            ident: v.name(),
+            range: pattern.syntax().text_range(),
+            ty,
+        }),
+        Pattern::AnnotationP(_) | Pattern::WildcardP(_) | Pattern::ParenP(_) => {
+            panic!("Non-VarP annotation in check pattern")
         }
     }
 }

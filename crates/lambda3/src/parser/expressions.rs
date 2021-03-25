@@ -28,6 +28,7 @@ pub fn expr(p: &mut Parser) -> ExprRes {
                 p.report_error(s);
             }
             Some(ExprRes::Ok) => {
+                //TODO: something's broken
                 p.finish_at(arg_checkpoint, EXPR_ARG);
                 p.start_node_at(checkpoint, APPLICATION_E);
                 is_application = true;
