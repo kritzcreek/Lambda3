@@ -10,7 +10,6 @@ pub enum ExprRes {
 }
 
 pub fn expr(p: &mut Parser) -> ExprRes {
-    let mut is_application = false;
     let checkpoint = p.checkpoint();
     match atom(p) {
         None => return ExprRes::Lul("Expected expression".to_string()),
@@ -28,15 +27,10 @@ pub fn expr(p: &mut Parser) -> ExprRes {
                 p.report_error(s);
             }
             Some(ExprRes::Ok) => {
-                //TODO: something's broken
                 p.finish_at(arg_checkpoint, EXPR_ARG);
-                p.start_node_at(checkpoint, APPLICATION_E);
-                is_application = true;
+                p.finish_at(checkpoint, APPLICATION_E);
             }
         }
-    }
-    if is_application {
-        p.finish_node();
     }
     ExprRes::Ok
 }
