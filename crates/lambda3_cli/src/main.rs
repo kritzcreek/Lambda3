@@ -1,11 +1,10 @@
+use lambda3::cst;
+use lambda3::types::Typechecker;
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
-
-use lambda3::cst;
-use lambda3::types::infer_expr;
+use std::fs;
 
 fn main() {
-    // `()` can be used when no completer is required
     let mut rl = Editor::<()>::new();
     if rl.load_history("history.txt").is_err() {
         println!("No previous history.");
@@ -15,15 +14,23 @@ fn main() {
         match readline {
             Ok(line) => {
                 rl.add_history_entry(line.as_str());
-                let expr = cst::parse(line.as_str()).expr();
+                let input = match line.strip_prefix(":file ") {
+                    None => line,
+                    Some(filename) => fs::read_to_string(filename).unwrap(),
+                };
+
+                let expr = cst::parse(input.as_str()).expr();
                 println!("{:#?}", expr);
-                match infer_expr(expr) {
+                let tc = Typechecker {
+                    top_level: expr.clone(),
+                };
+                match tc.infer_expr() {
                     Ok(expr_ast) => {
                         println!("{}", expr_ast);
                         println!("{}", expr_ast.ty());
                     }
-                    Err(e) => {
-                        println!("TypeErr: {}", e);
+                    Err(dl) => {
+                        println!("{}", dl);
                     }
                 }
             }

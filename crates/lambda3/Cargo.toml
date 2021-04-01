@@ -12,6 +12,7 @@ num-derive = "0.3.3"
 num-traits = "0.2.14"
 rowan = "0.12"
 smol_str = "0.1"
+annotate-snippets = { version = "0.9", features = ["yansi-term", "color"]}
 
 [dev-dependencies]
 insta = { version = "1.6", features = ["glob"] }
