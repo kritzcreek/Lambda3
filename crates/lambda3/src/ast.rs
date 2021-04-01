@@ -23,6 +23,7 @@ pub enum Ty {
         ty: Rc<Ty>,
     },
     Var {
+        range: TextRange,
         name: Name,
     },
 }
@@ -64,7 +65,9 @@ impl PartialEq for Ty {
             {
                 var1.ident == var2.ident && ty1.as_ref() == ty2.as_ref()
             }
-            (Ty::Var { name: name1 }, Ty::Var { name: name2 }) => name1.ident == name2.ident,
+            (Ty::Var { name: name1, .. }, Ty::Var { name: name2, .. }) => {
+                name1.ident == name2.ident
+            }
             _ => false,
         }
     }
@@ -220,6 +223,18 @@ impl Expr {
             Expr::TyApp { ty, .. } => ty.clone(),
             Expr::TyLambda { ty, .. } => ty.clone(),
             Expr::Let { ty, .. } => ty.clone(),
+        }
+    }
+}
+
+impl Ty {
+    pub fn text_range(&self) -> &TextRange {
+        match self {
+            Ty::Int { range, .. } => range,
+            Ty::Bool { range, .. } => range,
+            Ty::Func { range, .. } => range,
+            Ty::Forall { range, .. } => range,
+            Ty::Var { range, .. } => range,
         }
     }
 }
