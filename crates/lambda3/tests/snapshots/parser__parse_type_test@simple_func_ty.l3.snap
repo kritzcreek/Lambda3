@@ -1,6 +1,7 @@
 ---
-source: crates/lambda3/src/cst.rs
+source: crates/lambda3/tests/parser.rs
 expression: "(input, parse.errors, node)"
+input_file: crates/lambda3/tests/examples/types/simple_func_ty.l3
 
 ---
 (

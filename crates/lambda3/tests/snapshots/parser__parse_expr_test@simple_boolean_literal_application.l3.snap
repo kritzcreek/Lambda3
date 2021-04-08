@@ -1,7 +1,8 @@
 ---
-source: crates/lambda3/src/cst.rs
+source: crates/lambda3/tests/parser.rs
 expression: "(input, parse.errors, node)"
-input_file: crates/lambda3/src/examples/expr/simple_boolean_literal_application.l3
+input_file: crates/lambda3/tests/examples/expr/simple_boolean_literal_application.l3
+
 ---
 (
     "\\x. true false",
